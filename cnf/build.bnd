@@ -1,5 +1,3 @@
--include: cnf/gradle/base.bnd
-
 Bundle-Category: FlexiblePower Application Infrastructure - Applications
 qualifier: SNAPSHOT-${tstamp}
 
