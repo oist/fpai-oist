@@ -6,6 +6,6 @@ Fragment-Host: ch.qos.logback.classic
 	ch.qos.logback.classic,\
 	ch.qos.logback.core,\
 	com.google.gson,\
-	junit.osgi,\
+	biz.aQute.junit,\
 	org.apache.commons.io,\
 	org.mockito.mockito-all

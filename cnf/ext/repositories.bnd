@@ -1,31 +1,79 @@
--plugin:\
-		aQute.bnd.deployer.repository.LocalIndexedRepo;\
-		    name=Release;\
-		    local=${workspace}/cnf/release;\
-		    pretty=true,\
-		aQute.bnd.deployer.repository.FixedIndexedRepo;\
-		    name=FPAI Bundle Hub - Build;\
-		    locations=https://raw.githubusercontent.com/flexiblepower/bundle-hub/split-repos/build/index.xml;\
-		    cache=${workspace}/cnf/cache,\
-		aQute.bnd.deployer.repository.FixedIndexedRepo;\
-		    name=FPAI Bundle Hub - Run;\
-		    locations=https://raw.githubusercontent.com/flexiblepower/bundle-hub/split-repos/run/index.xml;\
-		    cache=${workspace}/cnf/cache,\
-		aQute.bnd.deployer.repository.FixedIndexedRepo;\
-		    name=FPAI Bundle Hub - Test;\
-		    locations=https://raw.githubusercontent.com/flexiblepower/bundle-hub/split-repos/test/index.xml;\
-		    cache=${workspace}/cnf/cache,\
-		aQute.bnd.deployer.repository.FixedIndexedRepo;\
-		    name=FlexiblePower Base (snapshot);\
-		    locations=http://fpai-ci.sensorlab.tno.nl/builds/flexiblepower-base/development/LATEST/repo/index.xml;\
-		    cache=${workspace}/cnf/cache,\
-		aQute.bnd.deployer.repository.FixedIndexedRepo;\
-		    name=FPAI Core (snapshot);\
-		    locations=http://fpai-ci.sensorlab.tno.nl/builds/fpai-core/development/LATEST/repo/index.xml;\
-		    cache=${workspace}/cnf/cache,\
-		aQute.bnd.deployer.repository.FixedIndexedRepo;\
-		    name=PowerMatcher (snapshot);\
-		    locations=http://fpai-ci.sensorlab.tno.nl/builds/powermatcher/powermatcher-2.1RC/LATEST/repo/index.xml;\
-		    cache=${workspace}/cnf/cache
+# Local Repository
+-plugin.1.Release: \
+    aQute.bnd.deployer.repository.LocalIndexedRepo;\
+        name="Release";\
+        local=${workspace}/cnf/release;\
+        pretty=true
+-plugin.2.Local: \
+    aQute.bnd.deployer.repository.LocalIndexedRepo;\
+		name="FlexiblePower Base (Local)";\
+		local=${workspace}/../flexiblepower-base/cnf/release/;\
+        pretty=true
+-plugin.3.Local: \
+    aQute.bnd.deployer.repository.LocalIndexedRepo;\
+		name="FPAI Core (Local)";\
+		local=${workspace}/../fpai-core/cnf/release/;\
+        pretty=true
+-plugin.4.Local: \
+    aQute.bnd.deployer.repository.LocalIndexedRepo;\
+		name="PowerMatcher (Local)";\
+		local=${workspace}/../powermatcher/cnf/release/;\
+        pretty=true
+
+# Maven Repository
+-plugin.11.Build: \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		releaseUrl=https://repo.maven.apache.org/maven2/; \
+		index=${.}/build.maven; \
+        name="FAN Bundle Hub - Build (Maven Repository)"
+-plugin.12.Run: \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		releaseUrl=https://repo.maven.apache.org/maven2/; \
+		index=${.}/run.maven; \
+        name="FAN Bundle Hub - Run (Maven Repository)"
+-plugin.13.Test: \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		releaseUrl=https://repo.maven.apache.org/maven2/; \
+		index=${.}/test.maven; \
+        name="FAN Bundle Hub - Test (Maven Repository)"
+-plugin.14.Eclipse: \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		releaseUrl=https://repo.eclipse.org/content/groups/releases/; \
+		index=${.}/eclipse.maven; \
+        name="FAN Bundle Hub - Run (Eclipse Repository)"
+
+# FlexiblePower Project Repositories
+#-plugin.51.FlexiblepowerBase: \
+#    aQute.bnd.deployer.repository.FixedIndexedRepo;\
+#        name="FlexiblePower Base (snapshot)";\
+#        locations=http://fpai-ci.sensorlab.tno.nl/builds/flexiblepower-base/development/LATEST/repo/index.xml;\
+#        cache=${workspace}/cnf/cache
+#-plugin.52.FPAI_Core: \
+#    aQute.bnd.deployer.repository.FixedIndexedRepo;\
+#        name="FPAI Core (snapshot)";\
+#        locations=http://fpai-ci.sensorlab.tno.nl/builds/fpai-core/development/LATEST/repo/index.xml;\
+#        cache=${workspace}/cnf/cache
+#-plugin.53.PowerMatcher: \
+#    aQute.bnd.deployer.repository.FixedIndexedRepo;\
+#        name="PowerMatcher (snapshot)";\
+#        locations=http://fpai-ci.sensorlab.tno.nl/builds/powermatcher/powermatcher-2.1RC/LATEST/repo/index.xml;\
+#        cache=${workspace}/cnf/cache
+
+# FlexiblePower Repositories
+#-plugin.61.Build: \
+#    aQute.bnd.deployer.repository.FixedIndexedRepo;\
+#        name="FAN Bundle Hub - Build";\
+#        locations=https://raw.githubusercontent.com/flexiblepower/bundle-hub/split-repos/build/index.xml;\
+#        cache=${workspace}/cnf/cache
+#-plugin.62.Run: \
+#    aQute.bnd.deployer.repository.FixedIndexedRepo;\
+#        name="FAN Bundle Hub - Run";\
+#        locations=https://raw.githubusercontent.com/flexiblepower/bundle-hub/split-repos/run/index.xml;\
+#        cache=${workspace}/cnf/cache
+#-plugin.63.Test: \
+#    aQute.bnd.deployer.repository.FixedIndexedRepo;\
+#        name="FAN Bundle Hub - Test";\
+#        locations=https://raw.githubusercontent.com/flexiblepower/bundle-hub/split-repos/test/index.xml;\
+#        cache=${workspace}/cnf/cache
 
 -releaserepo: Release

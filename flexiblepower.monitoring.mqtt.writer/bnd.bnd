@@ -1,8 +1,8 @@
--buildpath:  \
+-buildpath: \
 	${default-buildpath},\
-	lib/mqtt-client-0.4.0.jar;version=file,\
+	org.eclipse.paho:mqtt-client;version=0.4,\
 	com.google.gson
 Bundle-Version: 1.0.0.${qualifier}
 Service-Component: *
 Private-Package: org.flexiblepower.monitoring.mqtt
--includeresource: res, @lib/mqtt-client-0.4.0.jar
+-includeresource: res

@@ -1,7 +1,7 @@
 -buildpath: \
 	${fpai-buildpath},\
 	flexiblepower.ui,\
-	junit,\
+	junit:junit,\
 	org.mockito.mockito-all
 Bundle-Version: 1.1.0.${qualifier}
 Service-Component: *
