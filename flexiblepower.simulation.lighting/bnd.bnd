@@ -6,6 +6,6 @@
 	flexiblepower.ral.ext,\
 	flexiblepower.ui
 
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.0.${qualifier}
 Private-Package: org.flexiblepower.simulation.lighting
 Service-Component: org.flexiblepower.simulation.lighting.*
