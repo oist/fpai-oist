@@ -20,23 +20,43 @@
 		local=${workspace}/../powermatcher/cnf/release/;\
         pretty=true
 
+ -plugin.21.Github: \
+    aQute.bnd.deployer.repository.FixedIndexedRepo;\
+		locations=https://raw.githubusercontent.com/oist/flexiblepower-base/repo-oist/cnf/release/index.xml; \
+        name="Flexiblepower Base (Github Repository)"; \
+        cache=${workspace}/cnf/cache; \
+        readonly=true
+ -plugin.22.Github: \
+    aQute.bnd.deployer.repository.FixedIndexedRepo;\
+		locations=https://raw.githubusercontent.com/oist/fpai-core/repo-oist/cnf/release/index.xml; \
+		name="FPAI Core (Github Repository)";\
+        cache=${workspace}/cnf/cache; \
+        readonly=true
+
+ -plugin.23.Github: \
+    aQute.bnd.deployer.repository.FixedIndexedRepo;\
+		locations=https://raw.githubusercontent.com/oist/powermatcher/repo-oist/cnf/release/index.xml; \
+		name="PowerMatcher (Github Repository)";\
+        cache=${workspace}/cnf/cache; \
+        readonly=true
+
 # Maven Repository
--plugin.11.Build: \
+-plugin.31.Build: \
 	aQute.bnd.repository.maven.provider.MavenBndRepository; \
 		releaseUrl=https://repo.maven.apache.org/maven2/; \
 		index=${.}/build.maven; \
         name="FAN Bundle Hub - Build (Maven Repository)"
--plugin.12.Run: \
+-plugin.32.Run: \
 	aQute.bnd.repository.maven.provider.MavenBndRepository; \
 		releaseUrl=https://repo.maven.apache.org/maven2/; \
 		index=${.}/run.maven; \
         name="FAN Bundle Hub - Run (Maven Repository)"
--plugin.13.Test: \
+-plugin.33.Test: \
 	aQute.bnd.repository.maven.provider.MavenBndRepository; \
 		releaseUrl=https://repo.maven.apache.org/maven2/; \
 		index=${.}/test.maven; \
         name="FAN Bundle Hub - Test (Maven Repository)"
--plugin.14.Eclipse: \
+-plugin.34.Eclipse: \
 	aQute.bnd.repository.maven.provider.MavenBndRepository; \
 		releaseUrl=https://repo.eclipse.org/content/groups/releases/; \
 		index=${.}/eclipse.maven; \
