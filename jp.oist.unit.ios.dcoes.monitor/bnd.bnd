@@ -1,0 +1,11 @@
+-buildpath: \
+	${fpai-buildpath},\
+	org.eclipse.paho.client.mqttv3;version=1.2,\
+	org.everit.json.schema;version=1.5,\
+	json;version=20160810.0,\
+	flexiblepower.api
+Bundle-Version: 1.0.0.${qualifier}
+Service-Component: *
+Export-Package: \
+	jp.oist.unit.ios.dcoes.monitor,\
+	jp.oist.unit.ios.dcoes.monitor.message

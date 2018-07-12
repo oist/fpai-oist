@@ -1,4 +1,5 @@
 rootProject.name = 'fpai-apps'
+
 buildscript {
   repositories {
     mavenCentral()

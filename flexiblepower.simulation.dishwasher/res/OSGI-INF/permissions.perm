@@ -1,3 +1,0 @@
-(org.osgi.framework.ServicePermission "*" "get,register")
-(org.osgi.framework.PackagePermission "*" "import,exportonly")
-(java.net.SocketPermission "miele-gateway.labsgn.tno.nl:80" "connect,resolve")

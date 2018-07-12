@@ -1,3 +1,19 @@
+/* vim: set ts=2 sw=2 et fenc=utf-8 ff=unix : */
+import aQute.bnd.osgi.Jar
+
+buildscript {
+  repositories {
+    jcenter()
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:2.2.+'
+    classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:${bnd_version}"
+  }
+}
+apply plugin: 'nebula-aggregate-javadocs'
+
 subprojects {
   if (plugins.hasPlugin('biz.aQute.bnd')) {
 
@@ -7,6 +23,10 @@ subprojects {
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
+    javadoc {
+      failOnError = false
+    }
+
     jacoco {
       toolVersion = '0.7.9'
       reportsDir = file("$buildDir/jacoco")

@@ -1,6 +1,0 @@
--buildpath: ${fpai-buildpath}, flexiblepower.ui;version=latest
-
-Bundle-Version: 2.1.0.${qualifier}
-Service-Component: org.flexiblepower.simulation.dishwasher.*
-Export-Package:  org.flexiblepower.simulation.api.dishwasher
-Private-Package:  org.flexiblepower.simulation.dishwasher

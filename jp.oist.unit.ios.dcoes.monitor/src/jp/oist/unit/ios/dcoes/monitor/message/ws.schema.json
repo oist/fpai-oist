@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "timestamp": { "type": "integer" },
+    "wind_direction": { "type": "integer" },
+    "wind_speed": { "type": "number" },
+    "barometer": { "type": "number" },
+    "solar_radiation": { "type" : "number" },
+    "inside_temperature": { "type" : "number" },
+    "outside_temperature": { "type" : "number" },
+    "inside_humidity": { "type" : "number" },
+    "outside_humidity": { "type" : "number" },
+    "rain_rate": { "type" : "number" },
+    "storm_start_date": { "type" : "number" },
+    "storm_rain": { "type" : "number" },
+    "forecast_icons": { "type": "integer" },
+    "forecast_rule_number":{ "type": "integer" }
+  },
+  "required": [
+    "timestamp",
+    "barometer",
+    "solar_radiation",
+    "outside_temperature",
+    "outside_humidity"
+  ]
+}

@@ -32,7 +32,8 @@ public class Monitor {
         monitoredProviders = new ConcurrentHashMap<ObservationProvider<?>, MonitoredProvider<?>>();
     }
 
-    private final Map<ObservationProvider<?>, Map<String, Object>> unhandledObservationProviders = new HashMap<ObservationProvider<?>, Map<String, Object>>();
+    private final Map<ObservationProvider<?>, Map<String, Object>> unhandledObservationProviders =
+                                                                                                 new HashMap<ObservationProvider<?>, Map<String, Object>>();
     private File dataDir;
 
     @Activate

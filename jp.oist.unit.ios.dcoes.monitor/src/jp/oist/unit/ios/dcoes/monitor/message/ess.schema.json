@@ -1,0 +1,243 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "time": {
+      "type": "string",
+      "pattern": "([0-9]{4}\\/[0-9]{2}\\/[0-9]{2})-([0-9]{2}:[0-9]{2}:[0-9]{2})"
+    },
+    "emu": {
+      "type": "object",
+      "properties": {
+        "charge_discharge_power": { "type": "number" },
+        "ups_output_frequency": { "type": "number" },
+        "system_time": {
+          "type": "object",
+          "properties": {
+            "year": { "type": "integer" },
+            "month": { "type": "integer" },
+            "day": { "type": "integer" },
+            "hour": { "type": "integer" },
+            "minute": { "type": "integer" }
+          },
+          "required": ["year", "month", "day", "hour", "minute"]
+        },
+        "pvc_charge_current": { "type": "number" },
+        "ups_alarm": {"type": "integer"},
+        "rsoc": {"type": "integer"},
+        "battery_current": { "type": "number" },
+        "battery_voltage": { "type": "number" },
+        "pvc_charge_voltage": { "type": "number" },
+        "ups_operation_mode": {
+          "type": "object",
+          "properties": {
+            "parameter": { "type": "integer" },
+            "mode": { "type": "integer" },
+            "stop_mode": { "type": "integer" }
+          },
+          "required": ["parameter", "mode", "stop_mode"]
+        },
+        "ups_output_current": { "type": "number" },
+        "dischargeable_time": {
+          "type": "object",
+          "properties": {
+            "hour": { "type": "integer" },
+            "minute": { "type": "integer" }
+          },
+          "required": ["hour", "minute"]
+        },
+        "ups_output_power": { "type": "number" },
+        "battery_rsoc": { "type": "integer" },
+        "pvc_alarm": { "type": "integer" },
+        "ups_output_voltage": { "type": "number" },
+        "pvc_charge_power": { "type": "number" },
+        "ups_operation_schedule": { "type": "integer" },
+        "ups_input_voltage": { "type": "number" }
+      },
+      "required": [
+        "charge_discharge_power",
+        "ups_output_frequency",
+        "system_time",
+        "pvc_charge_current",
+        "ups_alarm",
+        "rsoc",
+        "battery_current",
+        "battery_voltage",
+        "pvc_charge_voltage",
+        "ups_operation_mode",
+        "ups_output_current",
+        "dischargeable_time",
+        "ups_output_power",
+        "battery_rsoc",
+        "pvc_alarm",
+        "ups_output_voltage",
+        "pvc_charge_power",
+        "ups_operation_schedule",
+        "ups_input_voltage"
+      ]
+    },
+    "apis": {
+      "type": "object",
+      "properties": {
+        "is_grid_master": { "type": "boolean" },
+        "deal_id_list": { "type": "array", "items": { "type": "string" } },
+        "deal_interlock_capacity": { "type": "integer" },
+        "remaining_capacity_wh": { "type": "integer" },
+        "operation_mode": {
+          "type": "object",
+          "properties": {
+            "global": { "oneOf": [
+              { "type": "null" },
+              { "type": "string" }
+            ]},
+            "local": { "oneOf": [
+              { "type": "null" },
+              { "type": "string" }
+            ]},
+            "effective": { "oneOf": [
+              { "type": "null" },
+              { "type": "string" }
+            ]}
+          }
+        }
+      },
+      "required": [
+        "deal_interlock_capacity",
+        "remaining_capacity_wh",
+        "operation_mode"
+      ]
+    },
+    "dcdc": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [ "0x0000", "0x0002", "0x0014", "0x0041" ]
+            },
+            "statusName": {
+              "type": "string",
+              "enum": [
+                "Waiting",
+                "Heteronomy CV Discharging",
+                "Grid Autonomy Mode",
+                "Heteronomy CV Charging - grid current limited"
+              ]
+            },
+            "alarm": {
+              "type": "string",
+              "pattern": "^([0-9A-Fa-f]{4}[ ]?){3}$"
+            },
+            "alarmState": {
+              "type": "string",
+              "enum": [ "No alarm", "Light alarm", "Heavy alarm" ]
+            },
+            "runningState": {
+              "type": "string",
+              "enum": [ "off", "charge", "discharge" ]
+            },
+            "operationMode": {
+              "type": "string",
+              "enum": [
+                "Waiting",
+                "Heteronomy CV",
+                "Grid Autonomy"
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "statusName",
+            "alarm",
+            "alarmState",
+            "runningState",
+            "operationMode"
+          ]
+        },
+        "powermeter": {
+          "type": "object",
+          "properties": {
+            "p1": { "type": "number" },
+            "v1": { "type": "number" },
+            "i1": { "type": "number" },
+            "p2": { "type": "number" },
+            "kwh1": { "type": "number" },
+            "kwh2": { "type": "number" }
+          },
+          "required":[ "p1", "v1", "i1", "p2", "kwh1", "kwh2" ]
+        },
+        "meter": {
+          "type": "object",
+          "properties": {
+            "tmp": { "type": "number" },
+            "wb": { "type": "number" },
+            "vb": { "type": "number" },
+            "ib": { "type": "number" },
+            "wg": { "type": "number" },
+            "vg": { "type": "number" },
+            "ig": { "type": "number" }
+          },
+          "required":[ "tmp", "wb", "vb", "ib", "wg", "vg", "ig" ]
+        },
+        "vdis": {
+          "type": "object",
+          "properties": {
+            "dvg": { "type": "number" },
+            "drg": { "type": "number" }
+          },
+          "required":[ "dvg", "drg" ]
+        },
+        "param": {
+          "type": "object",
+          "properties": {
+            "cib": { "type": "number" },
+            "ubv": { "type": "number" },
+            "ogv": { "type": "number" },
+            "dig": { "type": "number" },
+            "obv": { "type": "number" },
+            "ugv": { "type": "number" }
+          },
+          "required":[ "cib", "ubv", "ogv", "dig", "obv", "ugv" ]
+        }
+      },
+      "required": [ "status", "powermeter", "meter", "vdis", "param" ]
+    },
+    "oesunit": {
+      "type": "object",
+      "properties": {
+        "ip": { "oneOf": [
+          { "type": "null" },
+          { "type": "string" }
+        ]},
+        "clusterId": { "type": "string" },
+        "id": { "type": "string" },
+        "ipv6_ll": { "oneOf": [
+          { "type": "null" },
+          { "type": "string" }
+        ]},
+        "mac": { "type": "string", "pattern": "([0-9a-f]{2}[:]?){6}" },
+        "ipv6_g": { "oneOf": [
+          { "type": "null" },
+          { "type": "string" }
+        ]},
+        "budo": { "type": "string", "pattern": "[\\d]+"},
+        "display": { "type": "string" }
+      },
+      "required": [ "budo", "display" ]
+    },
+    "ess": {
+      "type": "object",
+      "properties": {
+        "time": { "$ref": "#/definitions/time" },
+        "emu": { "$ref": "#/definitions/emu" },
+        "apis": { "$ref": "#/definitions/apis" },
+        "dcdc": { "$ref": "#/definitions/dcdc" },
+        "oesunit": { "$ref": "#/definitions/oesunit" }
+      },
+      "required": ["time", "emu", "apis", "dcdc", "oesunit"]
+    }
+  },
+
+  "$ref": "#/definitions/ess"
+}

@@ -1,9 +1,0 @@
--buildpath: ${fpai-buildpath}
--testpath: ${test-buildpath}
-Private-Package: \
-	org.flexiblepower.protocol.mielegateway,\
-	org.flexiblepower.protocol.mielegateway.multicast,\
-	org.flexiblepower.protocol.mielegateway.xml
-Export-Package: org.flexiblepower.protocol.mielegateway.api
-Bundle-Version: 2.1.0.${qualifier}
-Service-Component: *

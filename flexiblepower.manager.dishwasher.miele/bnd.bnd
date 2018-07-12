@@ -1,4 +1,0 @@
--buildpath: ${fpai-buildpath}
-Bundle-Version: 2.1.0.${qualifier}
-Service-Component: *
-Private-Package: org.flexiblepower.miele.dishwasher.manager

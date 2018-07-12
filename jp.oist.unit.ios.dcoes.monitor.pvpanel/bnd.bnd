@@ -1,0 +1,9 @@
+-buildpath: \
+	${fpai-buildpath},\
+	json;version=20160810.0,\
+	flexiblepower.api,\
+	jp.oist.unit.ios.dcoes.monitor;version=latest,\
+	org.jruby.jruby;version=1.7
+Bundle-Version: 1.0.0.${qualifier}
+Service-Component: *
+Export-Package: jp.oist.unit.ios.dcoes.monitor.pvpanel
