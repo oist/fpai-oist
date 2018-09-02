@@ -2,8 +2,24 @@
 	${fpai-buildpath},\
 	json;version=20160810.0,\
 	flexiblepower.api,\
-	jp.oist.unit.ios.dcoes.monitor;version=latest,\
-	org.jruby.jruby;version=1.7
+	jp.oist.unit.ios.dcoes.monitor;version=latest
 Bundle-Version: 1.0.0.${qualifier}
 Service-Component: *
-Export-Package: jp.oist.unit.ios.dcoes.monitor.pvpanel
+Export-Package: \
+	jp.oist.unit.ios.dcoes.monitor.pvpanel,\
+	jp.oist.unit.ios.solarsystemlib,\
+	jp.oist.unit.ios.solarsystemlib.atomsphere,\
+	jp.oist.unit.ios.solarsystemlib.atomsphere.airmass,\
+	jp.oist.unit.ios.solarsystemlib.collection,\
+	jp.oist.unit.ios.solarsystemlib.common,\
+	jp.oist.unit.ios.solarsystemlib.irradiance,\
+	jp.oist.unit.ios.solarsystemlib.irradiance.aoi,\
+	jp.oist.unit.ios.solarsystemlib.irradiance.dni,\
+	jp.oist.unit.ios.solarsystemlib.irradiance.extraradiation,\
+	jp.oist.unit.ios.solarsystemlib.irradiance.skydiffuse,\
+	jp.oist.unit.ios.solarsystemlib.irradiance.spectrum,\
+	jp.oist.unit.ios.solarsystemlib.pvsystem,\
+	jp.oist.unit.ios.solarsystemlib.pvsystem.ac,\
+	jp.oist.unit.ios.solarsystemlib.pvsystem.cell.temperature,\
+	jp.oist.unit.ios.solarsystemlib.pvsystem.dc,\
+	jp.oist.unit.ios.solarsystemlib.solarposition

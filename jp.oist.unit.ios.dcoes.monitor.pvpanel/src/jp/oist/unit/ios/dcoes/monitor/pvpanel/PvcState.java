@@ -14,18 +14,10 @@ public class PvcState implements PowerState {
     private final ZonedDateTime timestamp;
 	
     private final Measurable<Power> power;
-	
-    private final Measurable<ElectricPotential> voltage;
-
-    private final Measurable<ElectricCurrent> current;
     
-	public PvcState(ZonedDateTime timestamp, Measurable<Power> power,
-                    Measurable<ElectricPotential> voltage,
-                    Measurable<ElectricCurrent> current) {
+	public PvcState(ZonedDateTime timestamp, Measurable<Power> power) {
         this.timestamp = timestamp;
         this.power = power;
-        this.voltage = voltage;
-        this.current = current;
     }
 
 	@Override
