@@ -76,155 +76,170 @@
       ]
     },
     "apis": {
-      "type": "object",
-      "properties": {
-        "is_grid_master": { "type": "boolean" },
-        "deal_id_list": { "type": "array", "items": { "type": "string" } },
-        "deal_interlock_capacity": { "type": "integer" },
-        "remaining_capacity_wh": { "type": "integer" },
-        "operation_mode": {
+      "oneOf": [
+        {
           "type": "object",
           "properties": {
-            "global": { "oneOf": [
-              { "type": "null" },
-              { "type": "string" }
-            ]},
-            "local": { "oneOf": [
-              { "type": "null" },
-              { "type": "string" }
-            ]},
-            "effective": { "oneOf": [
-              { "type": "null" },
-              { "type": "string" }
-            ]}
-          }
-        }
-      },
-      "required": [
-        "deal_interlock_capacity",
-        "remaining_capacity_wh",
-        "operation_mode"
-      ]
-    },
-    "dcdc": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "object",
-          "properties": {
-            "status": {
-              "type": "string",
-              "enum": [ "0x0000", "0x0002", "0x0014", "0x0041" ]
-            },
-            "statusName": {
-              "type": "string",
-              "enum": [
-                "Waiting",
-                "Heteronomy CV Discharging",
-                "Grid Autonomy Mode",
-                "Heteronomy CV Charging - grid current limited"
-              ]
-            },
-            "alarm": {
-              "type": "string",
-              "pattern": "^([0-9A-Fa-f]{4}[ ]?){3}$"
-            },
-            "alarmState": {
-              "type": "string",
-              "enum": [ "No alarm", "Light alarm", "Heavy alarm" ]
-            },
-            "runningState": {
-              "type": "string",
-              "enum": [ "off", "charge", "discharge" ]
-            },
-            "operationMode": {
-              "type": "string",
-              "enum": [
-                "Waiting",
-                "Heteronomy CV",
-                "Grid Autonomy"
-              ]
+            "is_grid_master": { "type": "boolean" },
+            "deal_id_list": { "type": "array", "items": { "type": "string" } },
+            "deal_interlock_capacity": { "type": "integer" },
+            "remaining_capacity_wh": { "type": "integer" },
+            "operation_mode": {
+              "type": "object",
+              "properties": {
+                "global": { "oneOf": [
+                  { "type": "null" },
+                  { "type": "string" }
+                ]},
+                "local": { "oneOf": [
+                  { "type": "null" },
+                  { "type": "string" }
+                ]},
+                "effective": { "oneOf": [
+                  { "type": "null" },
+                  { "type": "string" }
+                ]}
+              }
             }
           },
           "required": [
-            "status",
-            "statusName",
-            "alarm",
-            "alarmState",
-            "runningState",
-            "operationMode"
+            "deal_interlock_capacity",
+            "remaining_capacity_wh",
+            "operation_mode"
           ]
         },
-        "powermeter": {
+        { "type": "string" }
+      ]
+    },
+    "dcdc": {
+      "oneOf": [
+        {
           "type": "object",
           "properties": {
-            "p1": { "type": "number" },
-            "v1": { "type": "number" },
-            "i1": { "type": "number" },
-            "p2": { "type": "number" },
-            "kwh1": { "type": "number" },
-            "kwh2": { "type": "number" }
+            "status": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [ "0x0000", "0x0002", "0x0014", "0x0041" ]
+                },
+                "statusName": {
+                  "type": "string",
+                  "enum": [
+                    "Waiting",
+                    "Heteronomy CV Discharging",
+                    "Grid Autonomy Mode",
+                    "Heteronomy CV Charging - grid current limited"
+                  ]
+                },
+                "alarm": {
+                  "type": "string",
+                  "pattern": "^([0-9A-Fa-f]{4}[ ]?){3}$"
+                },
+                "alarmState": {
+                  "type": "string",
+                  "enum": [ "No alarm", "Light alarm", "Heavy alarm" ]
+                },
+                "runningState": {
+                  "type": "string",
+                  "enum": [ "off", "charge", "discharge" ]
+                },
+                "operationMode": {
+                  "type": "string",
+                  "enum": [
+                    "Waiting",
+                    "Heteronomy CV",
+                    "Grid Autonomy"
+                  ]
+                }
+              },
+              "required": [
+                "status",
+                "statusName",
+                "alarm",
+                "alarmState",
+                "runningState",
+                "operationMode"
+              ]
+            },
+            "powermeter": {
+              "type": "object",
+              "properties": {
+                "p1": { "type": "number" },
+                "v1": { "type": "number" },
+                "i1": { "type": "number" },
+                "p2": { "type": "number" },
+                "kwh1": { "type": "number" },
+                "kwh2": { "type": "number" }
+              },
+              "required":[ "p1", "v1", "i1", "p2", "kwh1", "kwh2" ]
+            },
+            "meter": {
+              "type": "object",
+              "properties": {
+                "tmp": { "type": "number" },
+                "wb": { "type": "number" },
+                "vb": { "type": "number" },
+                "ib": { "type": "number" },
+                "wg": { "type": "number" },
+                "vg": { "type": "number" },
+                "ig": { "type": "number" }
+              },
+              "required":[ "tmp", "wb", "vb", "ib", "wg", "vg", "ig" ]
+            },
+            "vdis": {
+              "type": "object",
+              "properties": {
+                "dvg": { "type": "number" },
+                "drg": { "type": "number" }
+              },
+              "required":[ "dvg", "drg" ]
+            },
+            "param": {
+              "type": "object",
+              "properties": {
+                "cib": { "type": "number" },
+                "ubv": { "type": "number" },
+                "ogv": { "type": "number" },
+                "dig": { "type": "number" },
+                "obv": { "type": "number" },
+                "ugv": { "type": "number" }
+              },
+              "required":[ "cib", "ubv", "ogv", "dig", "obv", "ugv" ]
+            }
           },
-          "required":[ "p1", "v1", "i1", "p2", "kwh1", "kwh2" ]
+          "required": [ "status", "powermeter", "meter", "vdis", "param" ]
         },
-        "meter": {
-          "type": "object",
-          "properties": {
-            "tmp": { "type": "number" },
-            "wb": { "type": "number" },
-            "vb": { "type": "number" },
-            "ib": { "type": "number" },
-            "wg": { "type": "number" },
-            "vg": { "type": "number" },
-            "ig": { "type": "number" }
-          },
-          "required":[ "tmp", "wb", "vb", "ib", "wg", "vg", "ig" ]
-        },
-        "vdis": {
-          "type": "object",
-          "properties": {
-            "dvg": { "type": "number" },
-            "drg": { "type": "number" }
-          },
-          "required":[ "dvg", "drg" ]
-        },
-        "param": {
-          "type": "object",
-          "properties": {
-            "cib": { "type": "number" },
-            "ubv": { "type": "number" },
-            "ogv": { "type": "number" },
-            "dig": { "type": "number" },
-            "obv": { "type": "number" },
-            "ugv": { "type": "number" }
-          },
-          "required":[ "cib", "ubv", "ogv", "dig", "obv", "ugv" ]
-        }
-      },
-      "required": [ "status", "powermeter", "meter", "vdis", "param" ]
+        { "type": "string" }
+      ]
     },
     "oesunit": {
-      "type": "object",
-      "properties": {
-        "ip": { "oneOf": [
-          { "type": "null" },
-          { "type": "string" }
-        ]},
-        "clusterId": { "type": "string" },
-        "id": { "type": "string" },
-        "ipv6_ll": { "oneOf": [
-          { "type": "null" },
-          { "type": "string" }
-        ]},
-        "mac": { "type": "string", "pattern": "([0-9a-f]{2}[:]?){6}" },
-        "ipv6_g": { "oneOf": [
-          { "type": "null" },
-          { "type": "string" }
-        ]},
-        "budo": { "type": "string", "pattern": "[\\d]+"},
-        "display": { "type": "string" }
-      },
-      "required": [ "budo", "display" ]
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ip": { "oneOf": [
+              { "type": "null" },
+              { "type": "string" }
+            ]},
+            "clusterId": { "type": "string" },
+            "id": { "type": "string" },
+            "ipv6_ll": { "oneOf": [
+              { "type": "null" },
+              { "type": "string" }
+            ]},
+            "mac": { "type": "string", "pattern": "([0-9a-f]{2}[:]?){6}" },
+            "ipv6_g": { "oneOf": [
+              { "type": "null" },
+              { "type": "string" }
+            ]},
+            "budo": { "type": "string", "pattern": "[\\d]+"},
+            "display": { "type": "string" }
+          },
+          "required": [ "budo", "display" ]
+        },
+        { "type": "string" }
+      ]
     },
     "ess": {
       "type": "object",
