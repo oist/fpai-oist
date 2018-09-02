@@ -4,12 +4,12 @@
     <scenario name="2. Dcoes">
         <!--  Dcoes Gateway on F-PAI -->
         <config bundleId="jp.oist.unit.ios.dcoes.monitor" factoryId="jp.oist.unit.ios.dcoes.monitor.Monitor">
-            <brokerUri>tcp://10.2.82.17:1883</brokerUri>
+            <brokerUri>tcp://localhost:1883</brokerUri>
             <protocol>MQTTv311</protocol>
-            <username>dcoes-user</username>
-            <password>dcoes-user</password>
-            <essTopic>dcoes/1/ess/F004</essTopic>
-            <weatherTopic>dcoes/1/weather_station/1</weatherTopic>
+            <username>demo</username>
+            <password>demo</password>
+            <essTopic>ess/F004</essTopic>
+            <weatherTopic>weather_station/1</weatherTopic>
         </config>
 
         <!--  Dcoes Household Settings -->
@@ -32,11 +32,15 @@
                 factoryId="jp.oist.unit.ios.dcoes.monitor.pvpanel.PowerConditioner"
                 ref="pvdrv">
             <name>House204 PVPanel</name>
-            <!--
-            <resourceId>pvdrv</resourceId>
-            -->
+            <resourceId>pvpanl</resourceId>
         </config>
-
+        <config bundleId="flexiblepower.manager.uncontrolled"
+                factoryId="org.flexiblepower.uncontrolled.manager.UncontrolledManager"
+                ref="pvmgr">
+            <expirationTime>60</expirationTime>
+            <showWidget>false</showWidget>
+            <resourceId>pvpanel</resourceId>
+        </config>
 
         <!--  Sony Battery  -->
         <config bundleId="flexiblepower.manager.genericadvancedbattery"
@@ -80,6 +84,8 @@
             <dashboardWidgetActive>true</dashboardWidgetActive>
         </config>
 
+		<connection from="pvdrv:manager" to="pvmgr:driver" />
+		<connection from="pvmgr:controller" to="pm:uncontrolled" />
 		<connection from="btmgr:controller" to="pm:buffer" />
         <connection from="hhdrv:manager" to="hhmgr:driver" />
         <connection from="hhmgr:controller" to="pm:uncontrolled" />
