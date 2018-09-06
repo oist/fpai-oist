@@ -1,0 +1,9 @@
+-buildpath: \
+	${fpai-buildpath},\
+	flexiblepower.api,\
+	net.powermatcher.api,\
+	net.powermatcher.core,\
+	flexiblepower.ui
+Bundle-Version: 1.0.0.${qualifier}
+Service-Component: *
+Private-Package: jp.oist.unit.ios.dcoes.houseagent
