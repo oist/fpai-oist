@@ -5,21 +5,21 @@
         local=${workspace}/cnf/release;\
         pretty=true
 
--plugin.2.Local: \
-    aQute.bnd.deployer.repository.LocalIndexedRepo;\
-		name="FlexiblePower Base (Local)";\
-		local=${workspace}/../flexiblepower-base/cnf/release/;\
-        pretty=true
--plugin.3.Local: \
-    aQute.bnd.deployer.repository.LocalIndexedRepo;\
-		name="FPAI Core (Local)";\
-		local=${workspace}/../fpai-core/cnf/release/;\
-        pretty=true
--plugin.4.Local: \
-    aQute.bnd.deployer.repository.LocalIndexedRepo;\
-		name="PowerMatcher (Local)";\
-		local=${workspace}/../powermatcher/cnf/release/;\
-        pretty=true
+#-plugin.2.Local: \
+#    aQute.bnd.deployer.repository.LocalIndexedRepo;\
+#		name="FlexiblePower Base (Local)";\
+#		local=${workspace}/../flexiblepower-base/cnf/release/;\
+#        pretty=true
+#-plugin.3.Local: \
+#    aQute.bnd.deployer.repository.LocalIndexedRepo;\
+#		name="FPAI Core (Local)";\
+#		local=${workspace}/../fpai-core/cnf/release/;\
+#        pretty=true
+#-plugin.4.Local: \
+#    aQute.bnd.deployer.repository.LocalIndexedRepo;\
+#		name="PowerMatcher (Local)";\
+#		local=${workspace}/../powermatcher/cnf/release/;\
+#        pretty=true
 
 -plugin.21.Github: \
    aQute.bnd.repository.osgi.OSGiRepository; \
