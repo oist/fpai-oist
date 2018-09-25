@@ -10,7 +10,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -36,39 +35,42 @@ import org.flexiblepower.ral.values.CommodityForecast;
 import org.flexiblepower.ral.values.CommodityForecast.Builder;
 import org.flexiblepower.ral.values.CommoditySet;
 import org.flexiblepower.ral.values.UncertainMeasure;
-import org.flexiblepower.simulation.profile.timeshifter.TimeShifterProfileManager.Config;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
 
-@Component(designateFactory = Config.class, provide = Endpoint.class, immediate = true)
+@Component(service = Endpoint.class, immediate = true)
+@Designate(ocd = TimeShifterProfileManager.Config.class, factory = true)
 public class TimeShifterProfileManager implements TimeShifterResourceManager, Runnable, MessageHandler {
 
-    @Meta.OCD
-    interface Config {
-        @Meta.AD(deflt = "timeshifterprofilemanager", description = "Resource identifier")
-        String resourceId();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(description = "Resource identifier")
+        String resourceId() default "timeshifterprofilemanager";
 
-        @Meta.AD(deflt = "washingmachine1.csv", description = "CSV file with power data profile")
-        String filename();
+        @AttributeDefinition(description = "CSV file with power data profile")
+        String filename() default "washingmachine1.csv";
 
-        @Meta.AD(deflt = "0",
-                 description = "This profile has validFrom value of bundle activation time plus this value in minutes")
-        int validFrom();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "This profile has validFrom value of bundle activation time plus this value in minutes")
+        int validFrom() default 0;
 
-        @Meta.AD(deflt = "600",
-                 description = "This profile has endBefore value of bundle activation time plus this value in minutes")
-        int endBefore();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "This profile has endBefore value of bundle activation time plus this value in minutes")
+        int endBefore() default 600;
 
-        @Meta.AD(deflt = "5", description = "Delay between updates will be send out in seconds")
-        int updateDelay();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+        		             description = "Delay between updates will be send out in seconds")
+        int updateDelay() default 5;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(TimeShifterProfileManager.class);
@@ -86,10 +88,10 @@ public class TimeShifterProfileManager implements TimeShifterResourceManager, Ru
     private long allocationReceivedTime;
 
     @Activate
-    public void activate(BundleContext bundleContext, Map<String, Object> properties) throws IOException {
+    public void activate(BundleContext bundleContext, final Config config) throws IOException {
         try {
             this.bundleContext = bundleContext;
-            config = Configurable.createConfigurable(Config.class, properties);
+            this.config = config;
 
             bundleActivationTime = context.currentTimeMillis();
             loadData(getInputStreamForFilename(config.filename()));

@@ -4,5 +4,3 @@
 
 Bundle-Version: 2.0.0.${qualifier}
 Export-Package: org.flexiblepower.generator.manager
-Service-Component: org.flexiblepower.generator.manager.*
--runee: JavaSE-1.6

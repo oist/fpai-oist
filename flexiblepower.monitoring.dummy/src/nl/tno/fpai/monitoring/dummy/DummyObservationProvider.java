@@ -1,7 +1,6 @@
 package nl.tno.fpai.monitoring.dummy;
 
 import java.util.Date;
-import java.util.Map;
 
 import javax.measure.Measurable;
 import javax.measure.Measure;
@@ -13,25 +12,28 @@ import org.flexiblepower.observation.ObservationProvider;
 import org.flexiblepower.observation.ext.AbstractObservationProvider;
 import org.flexiblepower.observation.ext.ObservationProviderRegistrationHelper;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.metatype.Configurable;
 
 /**
  * Observation Provider with some dummy values ...
  */
-@Component(immediate = true, designateFactory = DummyObservationProvider.Config.class)
+@Component(immediate = true)
+@Designate(ocd = DummyObservationProvider.Config.class)
 public class DummyObservationProvider extends AbstractObservationProvider<SomeValues> {
     private static final int TIMEOUT = 5000;
 
     /** Configuration specification of the component. */
-    public interface Config {
+    @ObjectClassDefinition
+    public @interface Config {
+    	@AttributeDefinition
         String identifier();
-
     }
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -44,8 +46,7 @@ public class DummyObservationProvider extends AbstractObservationProvider<SomeVa
      * often.
      */
     @Activate
-    public void activate(Map<String, Object> properties) {
-        Config config = Configurable.createConfigurable(Config.class, properties);
+    public void activate(final Config config) {
         int randomId = (int) (Math.random() * 10000);
         String by = "observer-" + config.identifier() + "-" + randomId;
         String of = "something-" + randomId;

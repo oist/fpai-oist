@@ -25,14 +25,13 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Reference;
-
-@Component(provide = Servlet.class, immediate = true, properties = "alias=/currentConfig.html")
+@Component(service = Servlet.class, immediate = true, property = {"alias=/currentConfig.html"})
 public class CurrentConfigurationServlet extends HttpServlet {
     private static final long serialVersionUID = -8933643059131786150L;
     private static final Logger logger = LoggerFactory.getLogger(CurrentConfigurationServlet.class);

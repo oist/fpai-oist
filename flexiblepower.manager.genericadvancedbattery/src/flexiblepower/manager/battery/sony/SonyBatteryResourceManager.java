@@ -1,7 +1,6 @@
 package flexiblepower.manager.battery.sony;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.annotation.Annotation;
 
 import javax.measure.Measure;
 import javax.measure.unit.SI;
@@ -10,51 +9,144 @@ import org.flexiblepower.context.FlexiblePowerContext;
 import org.flexiblepower.messaging.Endpoint;
 import org.flexiblepower.ui.Widget;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.metatype.annotations.Designate;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
 import flexiblepower.manager.genericadvancedbattery.GenericAdvancedBatteryConfig;
 import flexiblepower.manager.genericadvancedbattery.GenericAdvancedBatteryDeviceModel;
 import flexiblepower.manager.genericadvancedbattery.GenericAdvancedBatteryResourceManager;
 
-@Component(designateFactory = SonyBatteryConfig.class, provide = Endpoint.class, immediate = true)
+@Component(service = Endpoint.class, immediate = true)
+@Designate(ocd=SonyBatteryConfig.class, factory=true)
 public class SonyBatteryResourceManager extends GenericAdvancedBatteryResourceManager {
 
     private SonyBatteryConfig sonyConfiguration;
 
-    @Override
     @Activate
-    public void activate(BundleContext bundleContext, Map<String, Object> properties) {
+    public void activate(BundleContext bundleContext, final SonyBatteryConfig sonyBatteryConfig) {
         try {
-            sonyConfiguration = Configurable.createConfigurable(SonyBatteryConfig.class, properties);
+            sonyConfiguration = sonyBatteryConfig;
 
-            Map<String, Object> newProperties = new HashMap<String, Object>();
-            newProperties.put("resourceId", sonyConfiguration.resourceId());
-            newProperties.put("totalCapacityKWh", sonyConfiguration.nrOfmodules() * 1.2);
-            newProperties.put("maximumChargingRateWatts", sonyConfiguration.nrOfmodules() == 1 ? 2500 : 5000);
-            newProperties.put("maximumDischargingRateWatts", sonyConfiguration.nrOfmodules() == 1 ? 2500 : 5000);
-            newProperties.put("ratedCapacityAh", 24d * sonyConfiguration.nrOfmodules());
-            newProperties.put("nrOfCyclesBeforeEndOfLife", 6000);
-            newProperties.put("initialSocRatio", sonyConfiguration.initialSocRatio());
-            newProperties.put("nrOfModulationSteps", 19);
-            newProperties.put("minimumFillLevelPercent", sonyConfiguration.minimumFillLevelPercent());
-            newProperties.put("maximumFillLevelPercent", sonyConfiguration.maximumFillLevelPercent());
-            newProperties.put("updateIntervalSeconds", sonyConfiguration.updateIntervalSeconds());
+            final String resourceId = sonyConfiguration.resourceId();
+            final double totalCapacityKWh = sonyConfiguration.nrOfmodules() * 1.2;
+            final double maximumChargingRateWatts = sonyConfiguration.nrOfmodules() == 1 ? 2500 : 5000;
+            final double maximumDischargingRateWatts = sonyConfiguration.nrOfmodules() == 1 ? 2500 : 5000;
+            final double ratedCapacityAh = 24d * sonyConfiguration.nrOfmodules();
+            final int nrOfCyclesBeforeEndOfLife = 6000;
+            final double initialSocRatio = sonyConfiguration.initialSocRatio();
+            final int nrOfModulationSteps = 19;
+            final double minimumFillLevelPercent = sonyConfiguration.minimumFillLevelPercent();
+            final double maximumFillLevelPercent = sonyConfiguration.maximumFillLevelPercent();
+            final long updateIntervalSeconds = sonyConfiguration.updateIntervalSeconds();
 
             // Advanced batteryModel settings
-            newProperties.put("ratedVoltage", 52.6793);
-            newProperties.put("KValue", 0.011);
-            newProperties.put("QAmpereHours", 24);
-            newProperties.put("constantA", 3);
-            newProperties.put("constantB", 2.8);
-            newProperties.put("internalResistanceOhms", 0.036);
-            newProperties.put("batterySavingPowerWatts", 500);
+            final double ratedVoltage = 52.6793;
+            final double KValue = 0.011;
+            //final double QAmpereHours = 24;
+            final double constantA = 3;
+            final double constantB = 2.8;
+            final double internalResistanceOhms = 0.036;
+            final double batterySavingPowerWatts = 500;
 
             // Create a config
-            config = Configurable.createConfigurable(GenericAdvancedBatteryConfig.class, newProperties);
+            config = new GenericAdvancedBatteryConfig() {
+				@Override
+				public Class<? extends Annotation> annotationType() {
+					return GenericAdvancedBatteryConfig.class;
+				}
+
+				@Override
+				public String resourceId() {
+					return resourceId;
+				}
+
+				@Override
+				public double totalCapacityKWh() {
+					return totalCapacityKWh;
+				}
+
+				@Override
+				public double maximumChargingRateWatts() {
+					return maximumChargingRateWatts;
+				}
+
+				@Override
+				public double maximumDischargingRateWatts() {
+					return maximumDischargingRateWatts;
+				}
+
+				@Override
+				public double ratedCapacityAh() {
+
+					return ratedCapacityAh;
+				}
+
+				@Override
+				public int nrOfCyclesBeforeEndOfLife() {
+					return nrOfCyclesBeforeEndOfLife;
+				}
+
+				@Override
+				public double initialSocRatio() {
+					return initialSocRatio;
+				}
+
+				@Override
+				public double minimumFillLevelPercent() {
+					return minimumFillLevelPercent;
+				}
+
+				@Override
+				public double maximumFillLevelPercent() {
+					return maximumFillLevelPercent;
+				}
+
+				@Override
+				public int nrOfModulationSteps() {
+					return nrOfModulationSteps;
+				}
+
+				@Override
+				public int updateIntervalSeconds() {
+					return Long.valueOf(updateIntervalSeconds).intValue();
+				}
+
+				@Override
+				public double ratedVoltage() {
+					return ratedVoltage;
+				}
+
+				@Override
+				public double KValue() {
+					return KValue;
+				}
+
+				@Override
+				public double constantA() {
+					return constantA;
+				}
+
+				@Override
+				public double constantB() {
+					return constantB;
+				}
+
+				@Override
+				public double internalResistanceOhms() {
+					return internalResistanceOhms;
+				}
+
+				@Override
+				public double batterySavingPowerWatts() {
+					return batterySavingPowerWatts;
+				}
+            	
+            };
 
             // Initialize the batteryModel correctly to start the first time step.
             batteryModel = new GenericAdvancedBatteryDeviceModel(config, context);
@@ -86,7 +178,7 @@ public class SonyBatteryResourceManager extends GenericAdvancedBatteryResourceMa
     }
 
     @Override
-    @Reference(optional = false, dynamic = false, multiple = false)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY, policy = ReferencePolicy.STATIC)
     public void setContext(FlexiblePowerContext context) {
         this.context = context;
     }

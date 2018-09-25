@@ -2,6 +2,7 @@ package flexiblepower.manager.genericadvancedbattery;
 
 import static org.junit.Assert.assertEquals;
 
+import java.lang.annotation.Annotation;
 import java.util.Date;
 import java.util.UUID;
 
@@ -106,6 +107,11 @@ public class AdvancedBatteryDeviceModelTest {
             public double batterySavingPowerWatts() {
                 return 500;
             }
+
+			@Override
+			public Class<? extends Annotation> annotationType() {
+				return GenericAdvancedBatteryConfig.class;
+			}
 
         };
         context = Mockito.mock(FlexiblePowerContext.class);

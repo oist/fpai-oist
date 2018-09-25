@@ -1,7 +1,5 @@
 package net.powermatcher.fpai.observations;
 
-import java.util.Map;
-
 import net.powermatcher.api.monitoring.AgentObserver;
 import net.powermatcher.api.monitoring.ObservableAgent;
 import net.powermatcher.api.monitoring.events.AgentEvent;
@@ -10,31 +8,39 @@ import net.powermatcher.api.monitoring.events.OutgoingBidUpdateEvent;
 import net.powermatcher.api.monitoring.events.OutgoingPriceUpdateEvent;
 
 import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
-
-@Component(designateFactory = PowerMatcherObserver.Config.class, immediate = true, provide = {})
+@Component(immediate = true)
+@Designate(ocd = PowerMatcherObserver.Config.class, factory = true)
 public class PowerMatcherObserver implements AgentObserver {
-    public interface Config {
-        @Meta.AD(description = "Whether outgoing price events should be published", deflt = "true")
-        boolean publishPriceEvents();
+	@ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(type = AttributeType.BOOLEAN,
+                             description = "Whether outgoing price events should be published")
+        boolean publishPriceEvents() default true;
 
-        @Meta.AD(description = "Whether outgoing bid events should be published", deflt = "true")
-        boolean publishBidEvents();
+        @AttributeDefinition(type = AttributeType.BOOLEAN,
+                             description = "Whether outgoing bid events should be published")
+        boolean publishBidEvents() default true;
 
-        @Meta.AD(description = "Whether aggregation events should be published", deflt = "true")
-        boolean publishAggregationEvents();
+        @AttributeDefinition(type = AttributeType.BOOLEAN,
+                             description = "Whether aggregation events should be published")
+        boolean publishAggregationEvents() default true;
 
-        @Meta.AD(name = "agent.target", deflt = "")
-        String agentTarget();
+        @AttributeDefinition(name = "agent.target")
+        String agentTarget() default "";
     }
 
-    @Reference(dynamic = true, multiple = true, optional = true)
+    @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     public void addAgent(ObservableAgent agent) {
         agent.addObserver(this);
     }
@@ -48,8 +54,7 @@ public class PowerMatcherObserver implements AgentObserver {
     private AggregationObservationProvider aggregationPublisher;
 
     @Activate
-    public void activate(Map<String, Object> properties, BundleContext context) {
-        Config config = Configurable.createConfigurable(Config.class, properties);
+    public void activate(BundleContext context, final Config config) {
         if (config.publishPriceEvents()) {
             pricePublisher = new PriceObservationProvider(context);
         }

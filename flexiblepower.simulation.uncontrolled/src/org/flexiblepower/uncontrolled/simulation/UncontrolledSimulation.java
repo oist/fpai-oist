@@ -2,7 +2,6 @@ package org.flexiblepower.uncontrolled.simulation;
 
 import java.text.DecimalFormat;
 import java.util.Date;
-import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 
 import javax.measure.Measurable;
@@ -19,39 +18,43 @@ import org.flexiblepower.ral.drivers.uncontrolled.PowerState;
 import org.flexiblepower.ral.drivers.uncontrolled.UncontrollableDriver;
 import org.flexiblepower.ral.ext.AbstractResourceDriver;
 import org.flexiblepower.ui.Widget;
-import org.flexiblepower.uncontrolled.simulation.UncontrolledSimulation.Config;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Modified;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
-
-@Component(designateFactory = Config.class, provide = Endpoint.class, immediate = true)
+@Component(service = Endpoint.class, immediate = true)
+@Designate(ocd = UncontrolledSimulation.Config.class, factory = true)
 public class UncontrolledSimulation extends AbstractResourceDriver<PowerState, ResourceControlParameters> implements
                                                                                                          UncontrollableDriver,
                                                                                                          Runnable {
-    @Meta.OCD
-    interface Config {
-        @Meta.AD(deflt = "pvpanel", description = "Resource identifier")
-        String resourceId();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(description = "Resource identifier")
+        String resourceId() default "pvpanel";
 
-        @Meta.AD(deflt = "5", description = "Frequency in which updates will be send out in seconds")
-        int updateFrequency();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "Frequency in which updates will be send out in seconds")
+        int updateFrequency() default 5;
 
-        @Meta.AD(deflt = "0", description = "Generated Power when device is off")
-        double powerWhenOff();
+        @AttributeDefinition(type = AttributeType.DOUBLE,
+                             description = "Generated Power when device is off")
+        double powerWhenOff() default 0d;
 
-        @Meta.AD(deflt = "200", description = "Generated Power when TV is on")
-        int powerWhenTV();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "Generated Power when TV is on")
+        int powerWhenTV() default 200;
 
-        @Meta.AD(deflt = "1500", description = "Generated Power when Espresso Machine is On")
-        int powerWhenEspresso();
-
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "Generated Power when Espresso Machine is On")
+        int powerWhenEspresso() default 1500;
     }
 
     private double demand = -0.01;
@@ -67,9 +70,9 @@ public class UncontrolledSimulation extends AbstractResourceDriver<PowerState, R
     private SimpleObservationProvider<PowerState> observationProvider;
 
     @Activate
-    public void activate(BundleContext bundleContext, Map<String, Object> properties) {
+    public void activate(BundleContext bundleContext, final Config config) {
         try {
-            config = Configurable.createConfigurable(Config.class, properties);
+            this.config = config;
 
             tv = config.powerWhenTV();
             coffee = config.powerWhenEspresso();
@@ -92,9 +95,9 @@ public class UncontrolledSimulation extends AbstractResourceDriver<PowerState, R
     }
 
     @Modified
-    public void modify(BundleContext bundleContext, Map<String, Object> properties) {
+    public void modify(BundleContext bundleContext, final Config config) {
         try {
-            config = Configurable.createConfigurable(Config.class, properties);
+            this.config = config;
 
             tv = config.powerWhenTV();
             coffee = config.powerWhenEspresso();

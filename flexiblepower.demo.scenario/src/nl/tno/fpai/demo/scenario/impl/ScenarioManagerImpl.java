@@ -38,31 +38,30 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.AttributeDefinition;
 import org.osgi.service.metatype.MetaTypeInformation;
 import org.osgi.service.metatype.MetaTypeService;
 import org.osgi.service.metatype.ObjectClassDefinition;
+import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.ConfigurationPolicy;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
-
 @Component(immediate = true,
-           provide = { ScenarioManager.class },
-           designate = ScenarioManagerImpl.Config.class,
-           configurationPolicy = ConfigurationPolicy.optional)
+           service = { ScenarioManager.class },
+           configurationPolicy = ConfigurationPolicy.OPTIONAL)
+@Designate(ocd=ScenarioManagerImpl.Config.class)
 public class ScenarioManagerImpl implements ScenarioManager {
-    public interface Config {
-        @Meta.AD(deflt = "scenarios.xml",
-                 description = "The file that should be loaded during activation.",
-                 required = false)
-        String filename();
+
+	@org.osgi.service.metatype.annotations.ObjectClassDefinition
+    public @interface Config {
+		@org.osgi.service.metatype.annotations.AttributeDefinition(description = "The file that should be loaded during activation.",
+                                                                   required = false)
+        String filename() default "scenarios.xml";
     }
 
     private static final Logger log = LoggerFactory.getLogger(ScenarioManagerImpl.class);
@@ -93,8 +92,7 @@ public class ScenarioManagerImpl implements ScenarioManager {
     private Map<String, Scenario> scenarios;
 
     @Activate
-    public void activate(BundleContext context, Map<String, ?> properties) throws Exception {
-        Config config = Configurable.createConfigurable(Config.class, properties);
+    public void activate(BundleContext context, final Config config) throws Exception {
         String filename = config.filename();
 
         File file = new File(filename);

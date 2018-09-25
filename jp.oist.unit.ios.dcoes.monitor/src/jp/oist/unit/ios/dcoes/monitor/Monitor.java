@@ -19,51 +19,59 @@ import org.flexiblepower.observation.ObservationConsumer;
 import org.flexiblepower.observation.ext.SimpleObservationProvider;
 import org.json.JSONObject;
 import org.json.JSONTokener;import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.osgi.service.metatype.annotations.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
 import jp.oist.unit.ios.dcoes.monitor.message.EssMessage;
 import jp.oist.unit.ios.dcoes.monitor.message.IDcoesMessage;
 import jp.oist.unit.ios.dcoes.monitor.message.WeatherMessage;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Component(designate = Monitor.Config.class, provide=IDcoesMessage.class, immediate=true)
+@Component(service = Monitor.class, immediate=true)
+@Designate(ocd = Monitor.Config.class)
 public class Monitor {
     private final static Logger log = LoggerFactory.getLogger(Monitor.class);
     
     private final static String ESS_SCHEMA_PATH = "jp/oist/unit/ios/dcoes/monitor/message/ess.schema.json";
     private final static String WS_SCHEMA_PATH = "jp/oist/unit/ios/dcoes/monitor/message/ws.schema.json";
     
-    @Meta.OCD
-    interface Config {
-        @Meta.AD(deflt="tcp://127.0.0.1:1883", required=true, description="brokerUri")
-        String brokerUri();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(required=true, description="brokerUri")
+        String brokerUri() default "tcp://127.0.0.1:1883";
         
-        @Meta.AD(deflt="", required=true, description="target ess_topic of message")
+        @AttributeDefinition(description = "target ess_topic of message", required = true)
         String essTopic();
         
-        @Meta.AD(deflt="", required=true, description="target weather_topic of message")
+        @AttributeDefinition(description = "target weather_topic of message", required = true)
         String weatherTopic();
 
-        @Meta.AD(deflt="MQTTv31", optionValues={"MQTTv31", "MQTTv311"}, description="MQTT Protocol version")
-        String protocol();
+        @AttributeDefinition(description="MQTT Protocol version",
+                             options={
+                            		 @Option(label="MQTTv31", value="MQTTv31"),
+                            		 @Option(label="MQTTv311", value="MQTTv311")
+                             })
+        String protocol() default "MQTTv31";
         
-        @Meta.AD(deflt="", description="login username")
-        String username();
+        @AttributeDefinition(description="login username")
+        String username() default "";
         
-        @Meta.AD(deflt="", description="login password")
-        String password();
+        @AttributeDefinition(description="login password")
+        String password() default "";
     }
     
     private Schema essSchema;
@@ -155,9 +163,9 @@ public class Monitor {
     }
 
     @Activate
-    public void activate(BundleContext context, Map<String, ?> properties) {
+    public void activate(BundleContext context, final Config config) {
         log.debug("Activate");
-        config = Configurable.createConfigurable(Monitor.Config.class, properties);
+        this.config = config;
 
         provider = SimpleObservationProvider.create(this, IDcoesMessage.class)
                                             .observationOf("dcoes monitor")
@@ -173,10 +181,10 @@ public class Monitor {
         
         String clientId = MqttAsyncClient.generateClientId();
         try {
-        		essSchema = loadSchema(context.getBundle().getEntry(ESS_SCHEMA_PATH).getPath());
-        		wsSchema = loadSchema(context.getBundle().getEntry(WS_SCHEMA_PATH).getPath());
+        	essSchema = loadSchema(context.getBundle().getEntry(ESS_SCHEMA_PATH).getPath());
+        	wsSchema = loadSchema(context.getBundle().getEntry(WS_SCHEMA_PATH).getPath());
 
-        		persistence = new MqttDefaultFilePersistence();
+        	persistence = new MqttDefaultFilePersistence();
 
             mqttCli = new MqttAsyncClient(config.brokerUri(), clientId, persistence);
             mqttCli.setCallback(mqttCallback);
@@ -238,7 +246,6 @@ public class Monitor {
         }
     }
     
-    @Reference(optional=true, dynamic=true, multiple=true)
     public void subscribe(ObservationConsumer<IDcoesMessage> consumer) {
         log.info(String.format("%s subscribe", consumer.toString()));
         provider.subscribe(consumer);

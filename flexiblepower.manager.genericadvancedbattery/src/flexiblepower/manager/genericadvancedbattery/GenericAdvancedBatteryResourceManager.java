@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
@@ -49,14 +48,15 @@ import org.flexiblepower.ral.values.CommoditySet;
 import org.flexiblepower.ui.Widget;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
 
 /**
  * This is a ResourceManager for the generic Battery batteryModel. This manager includes the batteryModel, so there is
@@ -64,7 +64,8 @@ import aQute.bnd.annotation.metatype.Configurable;
  *
  * This is the generic batteryModel. There are specialized models which inherit from thil class.
  */
-@Component(designateFactory = GenericAdvancedBatteryConfig.class, provide = Endpoint.class, immediate = true)
+@Component(service = Endpoint.class, immediate = true)
+@Designate(ocd=GenericAdvancedBatteryConfig.class, factory=true)
 public class GenericAdvancedBatteryResourceManager implements BufferResourceManager, Runnable, MessageHandler {
 
     private static final int BATTERY_CHARGER_ACTUATOR_ID = 0;
@@ -93,10 +94,10 @@ public class GenericAdvancedBatteryResourceManager implements BufferResourceMana
     private HashMap<Integer, RunningMode<FillLevelFunction<RunningModeBehaviour>>> runningModes;
 
     @Activate
-    public void activate(BundleContext bundleContext, Map<String, Object> properties) {
+    public void activate(BundleContext bundleContext, GenericAdvancedBatteryConfig config) {
         try {
             // Create a config
-            config = Configurable.createConfigurable(GenericAdvancedBatteryConfig.class, properties);
+            this.config = config;
 
             // Initialize the batteryModel correctly to start the first time step.
             batteryModel = new GenericAdvancedBatteryDeviceModel(config, context);
@@ -126,7 +127,7 @@ public class GenericAdvancedBatteryResourceManager implements BufferResourceMana
         }
     }
 
-    @Reference(optional = false, dynamic = false, multiple = false)
+    @Reference(cardinality=ReferenceCardinality.MANDATORY, policy = ReferencePolicy.STATIC)
     public void setContext(FlexiblePowerContext context) {
         this.context = context;
     }

@@ -6,11 +6,11 @@ import java.util.Set;
 import nl.tno.fpai.demo.scenario.ScenarioManager;
 
 import org.flexiblepower.ui.Widget;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Reference;
 
-@Component(properties = "widget.ranking=999999")
+@Component(property = "widget.ranking=999999")
 public class ScenarioWidget implements Widget {
 
     private ScenarioManagerImpl scenarioManager;

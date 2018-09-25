@@ -1,24 +1,31 @@
 package flexiblepower.manager.battery.sony;
 
-import aQute.bnd.annotation.metatype.Meta;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
-@Meta.OCD
-public interface SonyBatteryConfig {
-    @Meta.AD(deflt = "SonyBatteryManager", description = "Unique resourceID")
-           String resourceId();
+@ObjectClassDefinition
+public @interface SonyBatteryConfig {
+    @AttributeDefinition(description = "Unique resourceID")
+    String resourceId() default "SonyBatteryManager";
 
-    @Meta.AD(deflt = "4", description = "Number of 1.2 kWh IJ1001M Modules")
-        int nrOfmodules();
+    @AttributeDefinition(type = AttributeType.INTEGER,
+                         description = "Number of 1.2 kWh IJ1001M Modules")
+    int nrOfmodules() default 4;
 
-    @Meta.AD(deflt = "0.5", description = "initial State of Charge (0-1)")
-           double initialSocRatio();
+    @AttributeDefinition(type = AttributeType.DOUBLE,
+                         description = "initial State of Charge (0-1)")
+    double initialSocRatio() default 0.5d;
 
-    @Meta.AD(deflt = "20", description = "minimum desired fill level (percent)")
-           double minimumFillLevelPercent();
+    @AttributeDefinition(type = AttributeType.DOUBLE,
+                         description = "minimum desired fill level (percent)")
+    double minimumFillLevelPercent() default 20d;
 
-    @Meta.AD(deflt = "90", description = "maximum desired fill level (percent)")
-           double maximumFillLevelPercent();
+    @AttributeDefinition(type = AttributeType.DOUBLE,
+                         description = "maximum desired fill level (percent)")
+    double maximumFillLevelPercent() default 90d;
 
-    @Meta.AD(deflt = "5", description = "The simulation time step for a recalculation of the state")
-         long updateIntervalSeconds();
+    @AttributeDefinition(type = AttributeType.LONG,
+                         description = "The simulation time step for a recalculation of the state")
+    long updateIntervalSeconds() default 5L;
 }

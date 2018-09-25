@@ -4,7 +4,6 @@
 	flexiblepower.api,\
 	jp.oist.unit.ios.dcoes.monitor;version=latest
 Bundle-Version: 1.0.0.${qualifier}
-Service-Component: *
 Export-Package: \
 	jp.oist.unit.ios.dcoes.monitor.pvpanel,\
 	jp.oist.unit.ios.solarsystemlib,\

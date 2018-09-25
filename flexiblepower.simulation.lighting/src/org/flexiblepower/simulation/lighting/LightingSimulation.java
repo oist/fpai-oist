@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,20 +22,20 @@ import org.flexiblepower.ral.ResourceControlParameters;
 import org.flexiblepower.ral.drivers.uncontrolled.PowerState;
 import org.flexiblepower.ral.drivers.uncontrolled.UncontrollableDriver;
 import org.flexiblepower.ral.ext.AbstractResourceDriver;
-import org.flexiblepower.simulation.lighting.LightingSimulation.Config;
 import org.flexiblepower.ui.Widget;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta.AD;
-import aQute.bnd.annotation.metatype.Meta.OCD;
-
-@Component(designateFactory = Config.class, provide = Endpoint.class, immediate = true)
+@Component(service = Endpoint.class, immediate = true)
+@Designate(ocd = LightingSimulation.Config.class, factory = true)
 public class LightingSimulation extends AbstractResourceDriver<PowerState, ResourceControlParameters> implements
 UncontrollableDriver,
                                                                                                      Runnable {
@@ -47,15 +46,15 @@ UncontrollableDriver,
         return cal.getTimeInMillis();
     }
 
-    @OCD
-    public interface Config {
+    @ObjectClassDefinition
+    public @interface Config {
         String applianceId();
 
-        @AD(deflt = "50", description = "The number of lights that should be simulated")
-        int nrOfLights();
+        @AttributeDefinition(type = AttributeType.INTEGER, description = "The number of lights that should be simulated")
+        int nrOfLights() default 50;
 
-        @AD(deflt = "35", description = "The amount of power that each light will use (in Watt)")
-        double powerPerLight();
+        @AttributeDefinition(type = AttributeType.DOUBLE, description = "The amount of power that each light will use (in Watt)")
+        double powerPerLight() default 35d;
     }
 
     private final static Pattern TIMES_PATTERN = Pattern.compile("([0-9]{2})\\.([0-9]{2}) ([0-9]{2})\\.([0-9]{2})");
@@ -111,9 +110,7 @@ UncontrollableDriver,
     private SimpleObservationProvider<LightingUpdate> observationProvider;
 
     @Activate
-    public void activate(BundleContext bundleContext, Map<String, Object> properties) throws IOException {
-        Config config = Configurable.createConfigurable(Config.class, properties);
-
+    public void activate(BundleContext bundleContext, final Config config) throws IOException {
         nrOfLights = config.nrOfLights();
         powerPerLight = config.powerPerLight();
 

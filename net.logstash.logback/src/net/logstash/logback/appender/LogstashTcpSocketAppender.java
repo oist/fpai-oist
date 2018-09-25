@@ -147,6 +147,8 @@ public class LogstashTcpSocketAppender extends AppenderBase<ILoggingEvent>
 
     protected void encoderInit(OutputStream outputStream) {
         if (encoder != null && outputStream != null) {
+            /*
+             * TODO: fixed encoder
             try {
                 encoder.init(outputStream);
             } catch (IOException ioe) {
@@ -155,11 +157,14 @@ public class LogstashTcpSocketAppender extends AppenderBase<ILoggingEvent>
                                           "Failed to initialize encoder for appender named ["
                                                   + name + "].", this, ioe));
             }
+            */
         }
     }
 
     protected void encoderClose(OutputStream outputStream) {
         if (encoder != null && outputStream != null) {
+            /*
+             * TODO: fixed encoder
             try {
                 encoder.close();
             } catch (IOException ioe) {
@@ -168,6 +173,7 @@ public class LogstashTcpSocketAppender extends AppenderBase<ILoggingEvent>
                                           "Failed to write footer for appender named [" + name
                                                   + "].", this, ioe));
             }
+            */
         }
     }
 
@@ -324,7 +330,8 @@ public class LogstashTcpSocketAppender extends AppenderBase<ILoggingEvent>
             int counter = 0;
             while (true) {
                 ILoggingEvent event = queue.take();
-                encoder.doEncode(event);
+                // TODO: fixed encoder
+                //encoder.doEncode(event);
                 outputStream.flush();
                 if (++counter >= CoreConstants.OOS_RESET_FREQUENCY) {
                     // Failing to reset the object output stream every now and

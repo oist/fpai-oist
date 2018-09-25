@@ -7,10 +7,14 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.flexiblepower.ui.Widget;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Meta;
 import net.powermatcher.api.data.Bid;
 import net.powermatcher.api.data.MarketBasis;
 import net.powermatcher.api.data.Price;
@@ -24,18 +28,19 @@ import net.powermatcher.api.monitoring.events.IncomingPriceUpdateEvent;
 import net.powermatcher.api.monitoring.events.OutgoingBidUpdateEvent;
 import net.powermatcher.api.monitoring.events.OutgoingPriceUpdateEvent;
 
-@Component(properties = { "widget.type=full", "widget.name=pmfullwidget" },
-           provide = Widget.class,
-           designate = FullWidget.Config.class)
+@Component(property = { "widget.type=full", "widget.name=pmfullwidget" },
+           service = Widget.class)
+@Designate(ocd = FullWidget.Config.class)
 public class FullWidget implements Widget, AgentObserver {
     private final Map<String, AgentInfo> bids = new ConcurrentHashMap<String, AgentInfo>();
 
-    public interface Config {
-        @Meta.AD(deflt = "", description = "A filter for only showing certain type of observable agents")
-               String agent_target();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(description = "A filter for only showing certain type of observable agents")
+        String agent_target() default "";
     }
 
-    @Reference(dynamic = true, multiple = true)
+    @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     public void addAgent(ObservableAgent agent) {
         bids.put(agent.getAgentId(), new AgentInfo(agent.getAgentId()));
         agent.addObserver(this);

@@ -6,6 +6,7 @@ buildscript {
   }
   dependencies {
     classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:${bnd_version}"
+    classpath "biz.aQute.bnd:biz.aQute.tester:${bnd_version}"
   }
 }
 

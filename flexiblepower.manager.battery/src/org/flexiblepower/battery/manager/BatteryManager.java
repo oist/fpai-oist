@@ -54,17 +54,18 @@ import org.flexiblepower.ral.messages.ResourceMessage;
 import org.flexiblepower.ral.values.CommodityMeasurables;
 import org.flexiblepower.ral.values.CommoditySet;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
-
-@Component(designateFactory = Config.class, provide = Endpoint.class, immediate = true)
+@Component(service = Endpoint.class, immediate = true)
+@Designate(ocd = Config.class, factory = true)
 @Ports(@Port(name = "driver", sends = BatteryControlParameters.class, accepts = BatteryState.class))
 public class BatteryManager extends AbstractResourceManager<BatteryState, BatteryControlParameters>
                             implements
@@ -77,10 +78,10 @@ public class BatteryManager extends AbstractResourceManager<BatteryState, Batter
     private static final int BATTERY_ACTUATOR_ID = 1; // self chosen id for the actuator
     private static final double CONSUMPTION_WHEN_IDLE_IN_WATTS = 0;
 
-    @Meta.OCD
-    interface Config {
-        @Meta.AD(deflt = "BatteryManager", description = "Unique resourceID")
-               String resourceId();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(description = "Unique resourceID")
+               String resourceId() default "BatteryManager";
     }
 
     private Config configuration;
@@ -252,9 +253,9 @@ public class BatteryManager extends AbstractResourceManager<BatteryState, Batter
     }
 
     @Activate
-    public void activate(BundleContext bundleContext, Map<String, Object> properties) {
+    public void activate(BundleContext bundleContext, final Config config) {
         // create a configuration
-        configuration = Configurable.createConfigurable(Config.class, properties);
+        configuration = config;
         logger.debug("BatteryManager Activated");
     }
 

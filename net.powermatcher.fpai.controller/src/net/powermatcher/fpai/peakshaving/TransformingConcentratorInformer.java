@@ -6,23 +6,22 @@ import org.flexiblepower.observation.Observation;
 import org.flexiblepower.observation.ObservationConsumer;
 import org.flexiblepower.observation.ObservationProvider;
 import org.flexiblepower.ral.drivers.uncontrolled.PowerState;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Meta;
-
-@Component(immediate = true, designateFactory = TransformingConcentratorInformer.Config.class)
+@Component(immediate = true)
+@Designate(ocd = TransformingConcentratorInformer.Config.class, factory = true)
 public class TransformingConcentratorInformer implements ObservationConsumer<PowerState> {
-    public interface Config {
-        @Meta.AD(deflt = "(agentId=peakshavingconcentrator)",
-                 description = "The filter that is used to determine which transforming concentrator should get the power values")
-                String
-                concentrator_target();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(description = "The filter that is used to determine which transforming concentrator should get the power values")
+        String concentrator_target() default "(agentId=peakshavingconcentrator)";
 
-        @Meta.AD(deflt = "(org.flexiblepower.monitoring.observationOf=something)",
-                 description = "The filter that is used to determine which observation provider should be used to get the power values")
-                String
-                observationProvider_target();
+        @AttributeDefinition(description = "The filter that is used to determine which observation provider should be used to get the power values")
+        String observationProvider_target() default "(org.flexiblepower.monitoring.observationOf=something)";
     }
 
     private TransformingConcentrator concentrator;

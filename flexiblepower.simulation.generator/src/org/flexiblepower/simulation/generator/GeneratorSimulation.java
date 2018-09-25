@@ -1,6 +1,5 @@
 package org.flexiblepower.simulation.generator;
 
-import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 
 import javax.measure.Measure;
@@ -13,32 +12,34 @@ import org.flexiblepower.driver.generator.GeneratorState;
 import org.flexiblepower.messaging.Endpoint;
 import org.flexiblepower.messaging.Port;
 import org.flexiblepower.ral.ext.AbstractResourceDriver;
-import org.flexiblepower.simulation.generator.GeneratorSimulation.Config;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Modified;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
-
 @Port(name = "manager", accepts = GeneratorControlParameters.class, sends = GeneratorState.class)
-@Component(designateFactory = Config.class, provide = Endpoint.class, immediate = true)
+@Component(service = Endpoint.class, immediate = true)
+@Designate(ocd = GeneratorSimulation.Config.class, factory = true)
 public class GeneratorSimulation extends AbstractResourceDriver<GeneratorState, GeneratorControlParameters> implements
                                                                                                            Runnable {
     private static final Logger logger = LoggerFactory.getLogger(GeneratorSimulation.class);
 
-    @Meta.OCD
-    interface Config {
-        @Meta.AD(deflt = "generator", description = "Resource identifier")
-        String resourceId();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(description = "Resource identifier")
+        String resourceId() default "generator";
 
-        @Meta.AD(deflt = "5", description = "Frequency with which updates will be sent out in seconds")
-        int updateFrequency();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "Frequency with which updates will be sent out in seconds")
+        int updateFrequency() default 5;
     }
 
     private ScheduledFuture<?> scheduledFuture;
@@ -65,9 +66,9 @@ public class GeneratorSimulation extends AbstractResourceDriver<GeneratorState, 
     }
 
     @Activate
-    public void activate(BundleContext bundleContext, Map<String, Object> properties) {
+    public void activate(BundleContext bundleContext, final Config config) {
         try {
-            config = Configurable.createConfigurable(Config.class, properties);
+            this.config = config;
 
             scheduledFuture = fpContext.scheduleAtFixedRate(this,
                                                             Measure.valueOf(0, SI.SECOND),
@@ -82,9 +83,9 @@ public class GeneratorSimulation extends AbstractResourceDriver<GeneratorState, 
     }
 
     @Modified
-    public void modify(BundleContext bundleContext, Map<String, Object> properties) {
+    public void modify(BundleContext bundleContext, final Config config) {
         try {
-            config = Configurable.createConfigurable(Config.class, properties);
+            this.config = config;
 
         } catch (RuntimeException ex) {
             logger.error("Error during modification of the generator simulation: " + ex.getMessage(), ex);

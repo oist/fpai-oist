@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -47,22 +46,24 @@ import org.flexiblepower.ral.values.CommoditySet;
 import org.flexiblepower.ui.Widget;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
 
 /**
  * The GeneratorManager receives a state and sends commands to the unconstrained driver. From the higher EFI layer it
  * receives allocations and sends the registration description and update messages to inform the EnergyApp of the state
  * of the device.
  */
-@Component(designateFactory = GeneratorManager.Config.class, provide = Endpoint.class, immediate = true)
+@Component(service = Endpoint.class, immediate = true)
+@Designate(ocd = GeneratorManager.Config.class, factory = true)
 @Ports({ @Port(name = "driver", sends = GeneratorControlParameters.class, accepts = GeneratorState.class),
         @Port(name = "controller",
               accepts = { UnconstrainedAllocation.class, AllocationRevoke.class },
@@ -76,31 +77,35 @@ public class GeneratorManager extends
     private static final Logger logger = LoggerFactory.getLogger(GeneratorManager.class);
     private static final Unit<Duration> MS = SI.MILLI(SI.SECOND);
 
-    @Meta.OCD
-    interface Config {
-        @Meta.AD(deflt = "generator", description = "Resource identifier")
-        String resourceId();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(description = "Resource identifier")
+        String resourceId() default "generator";
 
-        @Meta.AD(deflt = "20", description = "Expiration of the ControlSpaces [s]", required = false)
-        int expirationTime();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+        		             description = "Expiration of the ControlSpaces [s]", required = false)
+        int expirationTime() default 20;
 
-        @Meta.AD(deflt = "true", description = "Show simple widget")
-        boolean showWidget();
+        @AttributeDefinition(type = AttributeType.BOOLEAN,
+        		             description = "Show simple widget")
+        boolean showWidget() default true;
 
-        @Meta.AD(deflt = "-1000", description = "Power in Watt when the generator is producing at maximum.")
-        int minProduction();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+        		             description = "Power in Watt when the generator is producing at maximum.")
+        int minProduction() default -1000;
 
-        @Meta.AD(deflt = "-100",
-                 description = "Step size: power that will be added to min Production to generate the running modes.")
-        int stepSize();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "Step size: power that will be added to min Production to generate the running modes.")
+        int stepSize() default -100;
 
-        @Meta.AD(deflt = "11", description = "Number of steps between minimum and maximum")
-        int numberOfSteps();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+        		             description = "Number of steps between minimum and maximum")
+        int numberOfSteps() default 11;
 
-        @Meta.AD(deflt = "5",
-                 description = "Minimum time in seconds before a new running mode may be selected.",
-                 min = "0")
-        int minimumTimeBeforeSwitchingRunningModeInSeconds();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "Minimum time in seconds before a new running mode may be selected.",
+                             min = "0")
+        int minimumTimeBeforeSwitchingRunningModeInSeconds() default 5;
     }
 
     private Config config;
@@ -120,8 +125,8 @@ public class GeneratorManager extends
     }
 
     @Activate
-    public void activate(BundleContext bundleContext, Map<String, Object> properties) {
-        config = Configurable.createConfigurable(Config.class, properties);
+    public void activate(BundleContext bundleContext, final Config config) {
+    	this.config = config;
         if (config.showWidget()) {
             GeneratorManagerWidget widget = new GeneratorManagerWidget(this);
             widgetRegistration = bundleContext.registerService(Widget.class, widget, null);

@@ -3,7 +3,6 @@ package org.flexiblepower.uncontrolled.manager;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.measure.Measurable;
 import javax.measure.Measure;
@@ -27,20 +26,21 @@ import org.flexiblepower.ral.values.CommodityMeasurables;
 import org.flexiblepower.ral.values.CommoditySet;
 import org.flexiblepower.ral.values.ConstraintListMap;
 import org.flexiblepower.ui.Widget;
-import org.flexiblepower.uncontrolled.manager.UncontrolledManager.Config;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
-
-@Component(designateFactory = Config.class, provide = Endpoint.class, immediate = true)
+@Component(service = Endpoint.class, immediate = true)
+@Designate(ocd = UncontrolledManager.Config.class, factory = true)
 @Port(name = "driver", accepts = PowerState.class)
 public class UncontrolledManager extends
                                 AbstractResourceManager<PowerState, ResourceControlParameters> implements
@@ -48,16 +48,19 @@ public class UncontrolledManager extends
 
     private static final Logger logger = LoggerFactory.getLogger(UncontrolledManager.class);
 
-    @Meta.OCD
-    interface Config {
-        @Meta.AD(deflt = "uncontrolled", description = "Resource identifier")
-        String resourceId();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(description = "Resource identifier")
+        String resourceId() default "uncontrolled";
 
-        @Meta.AD(deflt = "20", description = "Expiration of the ControlSpaces [s]", required = false)
-        int expirationTime();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "Expiration of the ControlSpaces [s]",
+                             required = false)
+        int expirationTime() default 20;
 
-        @Meta.AD(deflt = "false", description = "Show simple widget")
-        boolean showWidget();
+        @AttributeDefinition(type = AttributeType.BOOLEAN,
+                             description = "Show simple widget")
+        boolean showWidget() default false;
     }
 
     private Config config;
@@ -75,8 +78,8 @@ public class UncontrolledManager extends
     }
 
     @Activate
-    public void activate(BundleContext bundleContext, Map<String, Object> properties) {
-        config = Configurable.createConfigurable(Config.class, properties);
+    public void activate(BundleContext bundleContext, final Config config) {
+        this.config = config;
         if (config.showWidget()) {
             widget = new UncontrolledManagerWidget(this);
             widgetRegistration = bundleContext.registerService(Widget.class, widget, null);

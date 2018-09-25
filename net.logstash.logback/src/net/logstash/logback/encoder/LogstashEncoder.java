@@ -21,8 +21,6 @@ import net.logstash.logback.decorate.JsonFactoryDecorator;
 import net.logstash.logback.decorate.JsonGeneratorDecorator;
 import net.logstash.logback.fieldnames.LogstashFieldNames;
 
-import org.apache.commons.io.IOUtils;
-
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.CoreConstants;
 import ch.qos.logback.core.encoder.EncoderBase;
@@ -34,15 +32,13 @@ public class LogstashEncoder extends EncoderBase<ILoggingEvent> {
     private final LogstashFormatter formatter = new LogstashFormatter(this);
 
     @Override
-    public void doEncode(ILoggingEvent event) throws IOException {
-
-        formatter.writeValueToOutputStream(event, context, outputStream);
-        IOUtils.write(CoreConstants.LINE_SEPARATOR, outputStream);
-
-        if (immediateFlush) {
-            outputStream.flush();
+    public byte[] encode(ILoggingEvent event) {
+        // maximum buffered size 1 Mb
+        try {
+            return formatter.writeValueAsBytes(event, context);
+        } catch (IOException e) {
+            return null;
         }
-
     }
 
     @Override
@@ -55,11 +51,6 @@ public class LogstashEncoder extends EncoderBase<ILoggingEvent> {
     public void stop() {
         super.stop();
         formatter.stop();
-    }
-
-    @Override
-    public void close() throws IOException {
-        IOUtils.write(CoreConstants.LINE_SEPARATOR, outputStream);
     }
 
     public boolean isImmediateFlush() {
@@ -178,5 +169,15 @@ public class LogstashEncoder extends EncoderBase<ILoggingEvent> {
 
     protected LogstashFormatter getFormatter() {
         return formatter;
+    }
+
+    @Override
+    public byte[] footerBytes() {
+        return CoreConstants.LINE_SEPARATOR.getBytes();
+    }
+
+    @Override
+    public byte[] headerBytes() {
+        return null;
     }
 }

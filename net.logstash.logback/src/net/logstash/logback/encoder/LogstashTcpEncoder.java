@@ -50,24 +50,13 @@ public class LogstashTcpEncoder extends LogstashEncoder {
     private String newLine = System.getProperty("line.separator");
 
     @Override
-    public void doEncode(ILoggingEvent event) throws IOException {
-
-        String log = getFormatter().writeValueAsString(event, context);
-        outputStream.write(log.getBytes(encoding));
-        if (newLine != null) {
-            outputStream.write(newLine.getBytes(Charset.forName(encoding)));
-        }
-
-        if (isImmediateFlush()) {
-            outputStream.flush();
-        }
-
-    }
-
-    @Override
-    public void close() throws IOException {
-        if (newLine != null) {
-            outputStream.write(newLine.getBytes(Charset.forName(encoding)));
+    public byte[] encode(ILoggingEvent event) {
+        try {
+            String log = getFormatter().writeValueAsString(event, context);
+            return log.getBytes(encoding);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -119,4 +108,13 @@ public class LogstashTcpEncoder extends LogstashEncoder {
         return newLine;
     }
 
+    @Override
+    public byte[] footerBytes() {
+        return (newLine == null)? null : newLine.getBytes(Charset.forName(encoding));
+    }
+
+    @Override
+    public byte[] headerBytes() {
+        return null;
+    }
 }

@@ -4,7 +4,7 @@
     <scenario name="2. Dcoes">
         <!--  Dcoes Gateway on F-PAI -->
         <config bundleId="jp.oist.unit.ios.dcoes.monitor" factoryId="jp.oist.unit.ios.dcoes.monitor.Monitor">
-            <brokerUri>tcp://localhost:1883</brokerUri>
+            <brokerUri>tcp://10.2.80.9:1883</brokerUri>
             <protocol>MQTTv311</protocol>
             <username>demo</username>
             <password>demo</password>

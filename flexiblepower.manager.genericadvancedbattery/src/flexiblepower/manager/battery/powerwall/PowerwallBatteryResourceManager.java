@@ -1,7 +1,6 @@
 package flexiblepower.manager.battery.powerwall;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.annotation.Annotation;
 
 import javax.measure.Measure;
 import javax.measure.unit.SI;
@@ -10,17 +9,20 @@ import org.flexiblepower.context.FlexiblePowerContext;
 import org.flexiblepower.messaging.Endpoint;
 import org.flexiblepower.ui.Widget;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.metatype.annotations.Designate;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
 import flexiblepower.manager.genericadvancedbattery.GenericAdvancedBatteryConfig;
 import flexiblepower.manager.genericadvancedbattery.GenericAdvancedBatteryDeviceModel;
 import flexiblepower.manager.genericadvancedbattery.GenericAdvancedBatteryResourceManager;
 
-@Component(designateFactory = PowerwallBatteryConfig.class, provide = Endpoint.class, immediate = true)
+@Component(service = Endpoint.class, immediate = true)
+@Designate(ocd=PowerwallBatteryConfig.class, factory=true)
 public class PowerwallBatteryResourceManager extends GenericAdvancedBatteryResourceManager {
 
     // TODO The real powerwall is less efficient (including inverter around 87% than the generic batteryModel).
@@ -28,35 +30,123 @@ public class PowerwallBatteryResourceManager extends GenericAdvancedBatteryResou
     private static final double RATED_VOLTAGE = 433.3507;
     private PowerwallBatteryConfig powerwallConfiguration;
 
-    @Override
     @Activate
-    public void activate(BundleContext bundleContext, Map<String, Object> properties) {
+    public void activate(BundleContext bundleContext, final PowerwallBatteryConfig powerwallBatteryConfig) {
         try {
-            powerwallConfiguration = Configurable.createConfigurable(PowerwallBatteryConfig.class, properties);
+            powerwallConfiguration = powerwallBatteryConfig;
 
-            Map<String, Object> newProperties = new HashMap<String, Object>();
-            newProperties.put("resourceId", powerwallConfiguration.resourceId());
-            newProperties.put("totalCapacityKWh", CAPACITY_KWH);
-            newProperties.put("maximumChargingRateWatts", 2000);
-            newProperties.put("maximumDischargingRateWatts", 2000);
-            newProperties.put("ratedCapacityAh", CAPACITY_KWH * 1000 / RATED_VOLTAGE);
-            newProperties.put("nrOfCyclesBeforeEndOfLife", 4000);
-            newProperties.put("initialSocRatio", powerwallConfiguration.initialSocRatio());
-            newProperties.put("nrOfModulationSteps", 19);
-            newProperties.put("minimumFillLevelPercent", powerwallConfiguration.minimumFillLevelPercent());
-            newProperties.put("maximumFillLevelPercent", powerwallConfiguration.maximumFillLevelPercent());
-            newProperties.put("updateIntervalSeconds", powerwallConfiguration.updateIntervalSeconds());
+            final String resourceId = powerwallConfiguration.resourceId();
+            final double totalCapacityKWh = CAPACITY_KWH;
+            final double maximumChargingRateWatts = 2000.0;
+            final double maximumDischargingRateWatts = 2000.0;
+            final double ratedCapacityAh = CAPACITY_KWH * 1000.0 / RATED_VOLTAGE;
+            final int nrOfCyclesBeforeEndOfLife = 4000;
+            final double initialSocRatio = powerwallConfiguration.initialSocRatio();
+            final int nrOfModulationSteps = 19;
+            final double minimumFillLevelPercent = powerwallConfiguration.minimumFillLevelPercent();
+            final double maximumFillLevelPercent = powerwallConfiguration.maximumFillLevelPercent();
+            final long updateIntervalSeconds = powerwallConfiguration.updateIntervalSeconds();
 
-            newProperties.put("ratedVoltage", RATED_VOLTAGE);
-            newProperties.put("KValue", 0.12903);
-            newProperties.put("QAmpereHours", 17.5);
-            newProperties.put("constantA", 60);
-            newProperties.put("constantB", 3.4893);
-            newProperties.put("internalResistanceOhms", 0.22857);
-            newProperties.put("batterySavingPowerWatts", 500);
+            final double ratedVoltage = RATED_VOLTAGE;
+            final double KValue = 0.12903;
+            //final double QAmpereHours = 17.5;
+            final double constantA = 60;
+            final double constantB = 3.4893;
+            final double internalResistanceOhms = 0.22857;
+            final double batterySavingPowerWatts = 500.0;
 
             // Create a config
-            config = Configurable.createConfigurable(GenericAdvancedBatteryConfig.class, newProperties);
+            config = new GenericAdvancedBatteryConfig() {
+				@Override
+				public Class<? extends Annotation> annotationType() {
+					return GenericAdvancedBatteryConfig.class;
+				}
+
+				@Override
+				public String resourceId() {
+					return resourceId;
+				}
+
+				@Override
+				public double totalCapacityKWh() {
+					return totalCapacityKWh;
+				}
+
+				@Override
+				public double maximumChargingRateWatts() {
+					return maximumChargingRateWatts;
+				}
+
+				@Override
+				public double maximumDischargingRateWatts() {
+					return maximumDischargingRateWatts;
+				}
+
+				@Override
+				public double ratedCapacityAh() {
+					return ratedCapacityAh;
+				}
+
+				@Override
+				public int nrOfCyclesBeforeEndOfLife() {
+					return nrOfCyclesBeforeEndOfLife;
+				}
+
+				@Override
+				public double initialSocRatio() {
+					return initialSocRatio;
+				}
+
+				@Override
+				public double minimumFillLevelPercent() {
+					return minimumFillLevelPercent;
+				}
+
+				@Override
+				public double maximumFillLevelPercent() {
+					return maximumFillLevelPercent;
+				}
+
+				@Override
+				public int nrOfModulationSteps() {
+					return nrOfModulationSteps;
+				}
+
+				@Override
+				public int updateIntervalSeconds() {
+					return Long.valueOf(updateIntervalSeconds).intValue();
+				}
+
+				@Override
+				public double ratedVoltage() {
+					return ratedVoltage;
+				}
+
+				@Override
+				public double KValue() {
+					return KValue;
+				}
+
+				@Override
+				public double constantA() {
+					return constantA;
+				}
+
+				@Override
+				public double constantB() {
+					return constantB;
+				}
+
+				@Override
+				public double internalResistanceOhms() {
+					return internalResistanceOhms;
+				}
+
+				@Override
+				public double batterySavingPowerWatts() {
+					return batterySavingPowerWatts;
+				}
+            };
 
             // Initialize the batteryModel correctly to start the first time step.
             batteryModel = new GenericAdvancedBatteryDeviceModel(config, context);
@@ -88,7 +178,7 @@ public class PowerwallBatteryResourceManager extends GenericAdvancedBatteryResou
     }
 
     @Override
-    @Reference(optional = false, dynamic = false, multiple = false)
+    @Reference(cardinality=ReferenceCardinality.MANDATORY, policy = ReferencePolicy.STATIC)
     public void setContext(FlexiblePowerContext context) {
         this.context = context;
     }

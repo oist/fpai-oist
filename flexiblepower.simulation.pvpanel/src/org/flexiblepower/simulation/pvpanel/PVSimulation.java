@@ -2,7 +2,6 @@ package org.flexiblepower.simulation.pvpanel;
 
 import java.text.DecimalFormat;
 import java.util.Date;
-import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 
 import javax.measure.Measurable;
@@ -18,19 +17,20 @@ import org.flexiblepower.ral.ResourceControlParameters;
 import org.flexiblepower.ral.drivers.uncontrolled.PowerState;
 import org.flexiblepower.ral.drivers.uncontrolled.UncontrollableDriver;
 import org.flexiblepower.ral.ext.AbstractResourceDriver;
-import org.flexiblepower.simulation.pvpanel.PVSimulation.Config;
 import org.flexiblepower.ui.Widget;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
-
-@Component(designateFactory = Config.class, provide = Endpoint.class, immediate = true)
+@Component(service = Endpoint.class, immediate = true)
+@Designate(ocd = PVSimulation.Config.class, factory = true)
 public class PVSimulation extends AbstractResourceDriver<PowerState, ResourceControlParameters>
                                                                                                implements
                                                                                                UncontrollableDriver,
@@ -66,22 +66,26 @@ public class PVSimulation extends AbstractResourceDriver<PowerState, ResourceCon
         }
     }
 
-    @Meta.OCD
-    interface Config {
-        @Meta.AD(deflt = "5", description = "Delay between updates will be send out in seconds")
-        int updateDelay();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "Delay between updates will be send out in seconds")
+        int updateDelay() default 5;
 
-        @Meta.AD(deflt = "0", description = "Generated Power when inverter is in stand by")
-        double powerWhenStandBy();
+        @AttributeDefinition(type = AttributeType.DOUBLE,
+                             description = "Generated Power when inverter is in stand by")
+        double powerWhenStandBy() default 0d;
 
-        @Meta.AD(deflt = "200", description = "Generated Power when cloudy weather")
-        int powerWhenCloudy();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "Generated Power when cloudy weather")
+        int powerWhenCloudy() default 200;
 
-        @Meta.AD(deflt = "1500", description = "Generated Power when sunny weather")
-        int powerWhenSunny();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "Generated Power when sunny weather")
+        int powerWhenSunny() default 1500;
 
-        @Meta.AD(deflt = "pvpanel", description = "Resource identifier")
-        String resourceId();
+        @AttributeDefinition(description = "Resource identifier")
+        String resourceId() default "pvpanel";
     }
 
     private double demand = -0.01;
@@ -97,9 +101,9 @@ public class PVSimulation extends AbstractResourceDriver<PowerState, ResourceCon
     private SimpleObservationProvider<PowerState> observationProvider;
 
     @Activate
-    public void activate(BundleContext bundleContext, Map<String, Object> properties) {
+    public void activate(BundleContext bundleContext, final Config config) {
         try {
-            config = Configurable.createConfigurable(Config.class, properties);
+            this.config = config;
             updateDelay = config.updateDelay();
             cloudy = config.powerWhenCloudy();
             sunny = config.powerWhenSunny();

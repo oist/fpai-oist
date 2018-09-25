@@ -1,7 +1,6 @@
 package net.powermatcher.fpai.controller;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -10,29 +9,30 @@ import net.powermatcher.fpai.agents.FpaiAgent;
 import net.powermatcher.fpai.agents.TimeshifterAgent;
 import net.powermatcher.fpai.agents.UnconstrainedAgent;
 import net.powermatcher.fpai.agents.UncontrolledAgent;
-import net.powermatcher.fpai.controller.PowerMatcherController.Config;
 
 import org.flexiblepower.efi.EfiControllerManager;
 import org.flexiblepower.messaging.Connection;
 import org.flexiblepower.messaging.Endpoint;
 import org.flexiblepower.messaging.MessageHandler;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
-
-@Component(immediate = true, designateFactory = Config.class, provide = { Endpoint.class })
+@Component(immediate = true, service = { Endpoint.class })
+@Designate(ocd = PowerMatcherController.Config.class, factory = true)
 public class PowerMatcherController implements EfiControllerManager {
 
-    public interface Config {
-        @Meta.AD(deflt = "auctioneer", required = false)
-        String desiredParent();
+	@ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(required = false)
+        String desiredParent() default "auctioneer";
 
-        @Meta.AD(deflt = "fpai-agent-")
-        String agentIdPrefix();
+        @AttributeDefinition()
+        String agentIdPrefix() default "fpai-agent-";
     }
 
     private BundleContext bundleContext;
@@ -46,9 +46,8 @@ public class PowerMatcherController implements EfiControllerManager {
     private String desiredParent;
 
     @Activate
-    public void activate(BundleContext context, Map<String, Object> properties) throws Exception {
+    public void activate(BundleContext context, final Config config) throws Exception {
         bundleContext = context;
-        Config config = Configurable.createConfigurable(Config.class, properties);
         agentIdPrefix = config.agentIdPrefix();
         desiredParent = config.desiredParent();
     }

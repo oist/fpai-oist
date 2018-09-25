@@ -12,7 +12,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -45,15 +44,17 @@ import org.flexiblepower.ral.values.ConstraintListMap;
 import org.flexiblepower.ral.values.UncertainMeasure;
 import org.flexiblepower.time.TimeService;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.osgi.service.metatype.annotations.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
 
 @Port(name = "controller",
       accepts = { UncontrolledAllocation.class, AllocationRevoke.class },
@@ -62,36 +63,45 @@ import aQute.bnd.annotation.metatype.Meta;
                AllocationStatusUpdate.class,
                ControlSpaceRevoke.class },
       cardinality = Cardinality.SINGLE)
-@Component(designateFactory = UncontrolledProfileManager.Config.class, provide = Endpoint.class, immediate = true)
+@Component(service = Endpoint.class, immediate = true)
+@Designate(ocd = UncontrolledProfileManager.Config.class, factory = true)
 public class UncontrolledProfileManager implements Runnable, MessageHandler, Endpoint, UncontrolledProfileForecaster {
 
-    @Meta.OCD
-    interface Config {
-        @Meta.AD(deflt = "pv.csv", description = "CSV file with power data profile")
-        String filename();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(description = "CSV file with power data profile")
+        String filename() default "pv.csv";
 
-        @Meta.AD(deflt = "true", description = "Generates power [true] or consumes power [false]")
-        boolean generatesPower();
+        @AttributeDefinition(type = AttributeType.BOOLEAN,
+                             description = "Generates power [true] or consumes power [false]")
+        boolean generatesPower() default true;
 
-        @Meta.AD(deflt = "15", description = "Duration of each forecast element in minutes")
-        int forecastDurationPerElement();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "Duration of each forecast element in minutes")
+        int forecastDurationPerElement() default 15;
 
-        @Meta.AD(deflt = "4", description = "Number of elements to use in each forecast")
-        int forecastNumberOfElements();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "Number of elements to use in each forecast")
+        int forecastNumberOfElements() default 4;
 
-        @Meta.AD(deflt = "10", description = "Randomness percentage [up and down] applied to forecast values")
-        int forecastRandomnessPercentage();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "Randomness percentage [up and down] applied to forecast values")
+        int forecastRandomnessPercentage() default 10;
 
-        @Meta.AD(deflt = "uncontrolledprofilemanager", description = "Resource identifier")
-        String resourceId();
+        @AttributeDefinition(description = "Resource identifier")
+        String resourceId() default "uncontrolledprofilemanager";
 
-        @Meta.AD(deflt = "5", description = "Delay between updates will be send out in seconds")
-        int updateDelay();
+        @AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "Delay between updates will be send out in seconds")
+        int updateDelay() default 5;
 
-        @Meta.AD(deflt = commodityElecricityOption,
-                 description = "Commodity for this profile",
-                 optionValues = { commodityElecricityOption, commodityHeatOption, commodityGasOption })
-        String profileCommodity();
+        @AttributeDefinition(description = "Commodity for this profile",
+                             options = {
+                            		 @Option(label=commodityElecricityOption, value=commodityElecricityOption),
+                            		 @Option(label=commodityHeatOption, value=commodityHeatOption),
+                            		 @Option(label=commodityGasOption, value=commodityGasOption)                            		 
+                             })
+        String profileCommodity() default commodityElecricityOption;
     }
 
     static final String commodityElecricityOption = "Electricity";
@@ -116,9 +126,9 @@ public class UncontrolledProfileManager implements Runnable, MessageHandler, End
     private ScheduledExecutorService scheduledExecutorService;
 
     @Activate
-    public void activate(BundleContext bundleContext, Map<String, Object> properties) throws IOException {
+    public void activate(BundleContext bundleContext, final Config config) throws IOException {
         try {
-            config = Configurable.createConfigurable(Config.class, properties);
+            this.config = config;
 
             if (config.profileCommodity().equals(commodityElecricityOption)) {
                 commoditySet = CommoditySet.onlyElectricity;

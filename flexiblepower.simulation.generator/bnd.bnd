@@ -1,5 +1,4 @@
 -buildpath: ${fpai-buildpath}
-Service-Component: *
 Bundle-Version: 1.0.0.${qualifier}
 Export-Package: org.flexiblepower.driver.generator
 Private-Package:  org.flexiblepower.simulation.generator

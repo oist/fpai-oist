@@ -4,7 +4,6 @@ import static javax.measure.unit.NonSI.KWH;
 import static javax.measure.unit.SI.WATT;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 
 import javax.measure.Measurable;
@@ -21,20 +20,20 @@ import org.flexiblepower.ral.drivers.battery.BatteryDriver;
 import org.flexiblepower.ral.drivers.battery.BatteryMode;
 import org.flexiblepower.ral.drivers.battery.BatteryState;
 import org.flexiblepower.ral.ext.AbstractResourceDriver;
-import org.flexiblepower.simulation.battery.BatterySimulation.Config;
 import org.flexiblepower.ui.Widget;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Modified;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
 
 /**
  * TODO Uit BatteryState weghalen van de charge en discharge efficiency
@@ -42,37 +41,47 @@ import aQute.bnd.annotation.metatype.Meta;
  * @author waaijbdvd
  *
  */
-@Component(designateFactory = Config.class, provide = Endpoint.class, immediate = true)
+@Component(service = Endpoint.class, immediate = true)
+@Designate(ocd = BatterySimulation.Config.class, factory = true)
 public class BatterySimulation
                               extends AbstractResourceDriver<BatteryState, BatteryControlParameters>
                                                                                                     implements
                                                                                                     BatteryDriver,
                                                                                                     Runnable {
 
-    interface Config {
-        @Meta.AD(deflt = "5", description = "Interval between state updates [s]")
-        long updateInterval();
+	@ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(type = AttributeType.LONG,
+                             description = "Interval between state updates [s]")
+        long updateInterval() default 5L;
 
-        @Meta.AD(deflt = "1", description = "Total capacity [kWh]")
-        double totalCapacity();
+        @AttributeDefinition(type = AttributeType.DOUBLE,
+                             description = "Total capacity [kWh]")
+        double totalCapacity() default 1d;
 
-        @Meta.AD(deflt = "0.5", description = "Initial state of charge (from 0 to 1)")
-        double initialStateOfCharge();
+        @AttributeDefinition(type = AttributeType.DOUBLE,
+                             description = "Initial state of charge (from 0 to 1)")
+        double initialStateOfCharge() default 0.5d;
 
-        @Meta.AD(deflt = "1500", description = "Charge power [W]")
-        long chargePower();
+        @AttributeDefinition(type = AttributeType.LONG,
+                             description = "Charge power [W]")
+        long chargePower() default 1500L;
 
-        @Meta.AD(deflt = "1500", description = "Discharge power [W]")
-        long dischargePower();
+        @AttributeDefinition(type = AttributeType.LONG,
+                             description = "Discharge power [W]")
+        long dischargePower() default 1500L;
 
-        @Meta.AD(deflt = "0.9", description = "Charge efficiency (from 0 to 1)")
-        double chargeEfficiency();
+        @AttributeDefinition(type = AttributeType.DOUBLE,
+                             description = "Charge efficiency (from 0 to 1)")
+        double chargeEfficiency() default 0.9d;
 
-        @Meta.AD(deflt = "0.9", description = "Discharge efficiency (from 0 to 1)")
-        double dischargeEfficiency();
+        @AttributeDefinition(type = AttributeType.DOUBLE,
+                             description = "Discharge efficiency (from 0 to 1)")
+        double dischargeEfficiency() default 0.9d;
 
-        @Meta.AD(deflt = "50", description = "Self discharge power [W]")
-        long selfDischargePower();
+        @AttributeDefinition(type = AttributeType.LONG,
+                             description = "Self discharge power [W]")
+        long selfDischargePower() default 50L;
     }
 
     class State implements BatteryState {
@@ -181,9 +190,9 @@ public class BatterySimulation
     }
 
     @Activate
-    public void activate(BundleContext context, Map<String, Object> properties) throws Exception {
+    public void activate(BundleContext context, final Config config) throws Exception {
         try {
-            configuration = Configurable.createConfigurable(Config.class, properties);
+            configuration = config;
 
             totalCapacityInKWh = Measure.valueOf(configuration.totalCapacity(), KWH);
             chargeSpeedInWatt = Measure.valueOf(configuration.chargePower(), WATT);
@@ -223,9 +232,9 @@ public class BatterySimulation
     }
 
     @Modified
-    public void modify(BundleContext context, Map<String, Object> properties) {
+    public void modify(BundleContext context, final Config config) {
         try {
-            configuration = Configurable.createConfigurable(Config.class, properties);
+            configuration = config;
 
             totalCapacityInKWh = Measure.valueOf(configuration.totalCapacity(), KWH);
             chargeSpeedInWatt = Measure.valueOf(configuration.chargePower(), WATT);

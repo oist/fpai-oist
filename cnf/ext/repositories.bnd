@@ -20,25 +20,25 @@
 		local=${workspace}/../powermatcher/cnf/release/;\
         pretty=true
 
- -plugin.21.Github: \
-    aQute.bnd.deployer.repository.FixedIndexedRepo;\
-		locations=https://raw.githubusercontent.com/oist/flexiblepower-base/repo-oist/cnf/release/index.xml; \
-        name="Flexiblepower Base (Github Repository)"; \
-        cache=${workspace}/cnf/cache; \
-        readonly=true
- -plugin.22.Github: \
-    aQute.bnd.deployer.repository.FixedIndexedRepo;\
-		locations=https://raw.githubusercontent.com/oist/fpai-core/repo-oist/cnf/release/index.xml; \
-		name="FPAI Core (Github Repository)";\
-        cache=${workspace}/cnf/cache; \
-        readonly=true
-
- -plugin.23.Github: \
-    aQute.bnd.deployer.repository.FixedIndexedRepo;\
-		locations=https://raw.githubusercontent.com/oist/powermatcher/repo-oist/cnf/release/index.xml; \
-		name="PowerMatcher (Github Repository)";\
-        cache=${workspace}/cnf/cache; \
-        readonly=true
+# -plugin.21.Github: \
+#    aQute.bnd.repository.osgi.OSGiRepository; \
+#		locations=https://raw.githubusercontent.com/oist/flexiblepower-repo/master/flexiblepower-base/index.xml; \
+#        name="Flexiblepower Base (Github)"; \
+#        cache=${workspace}/cnf/cache; \
+#        readonly=true
+# -plugin.22.Github: \
+#    aQute.bnd.repository.osgi.OSGiRepository; \
+#		locations=https://raw.githubusercontent.com/oist/flexiblepower-repo/master/fpai-core/index.xml; \
+#		name="FPAI Core (Github)";\
+#        cache=${workspace}/cnf/cache; \
+#        readonly=true
+#
+# -plugin.23.Github: \
+#    aQute.bnd.repository.osgi.OSGiRepository; \
+#		locations=https://raw.githubusercontent.com/oist/flexiblepower-repo/master/powermatcher/index.xml; \
+#		name="PowerMatcher (Github)";\
+#        cache=${workspace}/cnf/cache; \
+#        readonly=true
 
 # Maven Repository
 -plugin.31.Build: \

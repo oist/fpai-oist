@@ -1,9 +1,7 @@
 package jp.oist.unit.ios.dcoes.monitor.pvpanel;
 
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,15 +18,17 @@ import org.flexiblepower.ral.drivers.uncontrolled.PowerState;
 import org.flexiblepower.ral.drivers.uncontrolled.UncontrollableDriver;
 import org.flexiblepower.ral.ext.AbstractResourceDriver;
 import org.json.JSONObject;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
+import jp.oist.unit.ios.dcoes.monitor.Monitor;
 import jp.oist.unit.ios.dcoes.monitor.message.EssMessage;
 import jp.oist.unit.ios.dcoes.monitor.message.IDcoesMessage;
 import jp.oist.unit.ios.dcoes.monitor.message.WeatherMessage;
@@ -40,14 +40,15 @@ import jp.oist.unit.ios.solarsystemlib.pvsystem.PvSystem;
 import jp.oist.unit.ios.solarsystemlib.solarposition.SolarPosition;
 import jp.oist.unit.ios.solarsystemlib.irradiance.Irradiance;
 
-@Component(designateFactory=PowerConditioner.Config.class, provide=Endpoint.class, immediate=true)
+@Component(service = Endpoint.class)
+@Designate(ocd = PowerConditioner.Config.class, factory = true)
 public class PowerConditioner
 	extends AbstractResourceDriver<PowerState, ResourceControlParameters>
 	implements ObservationConsumer<IDcoesMessage>, UncontrollableDriver, Runnable {
 
     private final static Logger log = LoggerFactory.getLogger(PowerConditioner.class);
 
-    private ObservationProvider<IDcoesMessage> provider = null;
+    private Monitor monitor = null;
     private final Object pbLock = new Object();
     private final Object wsLock = new Object();
 
@@ -63,10 +64,10 @@ public class PowerConditioner
     protected PvcState latestPvcState = null;
     protected JSONObject latestWeather = null;
     
-    @Meta.OCD
-	interface Config {
-        @Meta.AD(deflt="", description="name")
-        String name();
+    @ObjectClassDefinition
+	public @interface Config {
+        @AttributeDefinition(description = "name", required = false)
+        String name() default "";
 	}
     
     private void consume(EssMessage ess) {
@@ -153,8 +154,8 @@ public class PowerConditioner
     @Deactivate
     public void deactivate() {
         log.info("Deactivate");
-        if (this.provider != null)
-            this.provider.unsubscribe(this);
+        if (this.monitor != null)
+            this.monitor.unsubscribe(this);
     }
 
 	@Override
@@ -172,12 +173,12 @@ public class PowerConditioner
 	}
 
     @Reference
-    public void onFoundProvider(ObservationProvider<IDcoesMessage> provider) {
-        if (this.provider != null)
-            this.provider.unsubscribe(this);
-        log.info(String.format("register to %s", provider.toString()));
-        provider.subscribe(this);
-        this.provider = provider;
+    public void onFoundProvider(Monitor monitor) {
+        if (this.monitor != null)
+            this.monitor.unsubscribe(this);
+        log.info(String.format("register to %s", monitor.toString()));
+        monitor.subscribe(this);
+        this.monitor = monitor;
     }
 
 	@Override

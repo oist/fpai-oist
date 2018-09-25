@@ -6,24 +6,27 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.flexiblepower.monitoring.csv.Monitor.Config;
 import org.flexiblepower.observation.ObservationProvider;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
-
-@Component(designateFactory = Config.class)
+@Component
+@Designate(ocd = Monitor.Config.class, factory = true)
 public class Monitor {
     private static Logger logger = LoggerFactory.getLogger(Monitor.class);
 
-    public interface Config {
-        @Meta.AD(deflt = "/tmp/fpai/monitor", description = "The directory to which the CSV files will be written")
-        String outputDirectory();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(description = "The directory to which the CSV files will be written")
+        String outputDirectory() default "/tmp/fpai/monitor";
     }
 
     private final Map<ObservationProvider<?>, MonitoredProvider<?>> monitoredProviders;
@@ -37,9 +40,7 @@ public class Monitor {
     private File dataDir;
 
     @Activate
-    public void activate(Map<String, ?> properties) {
-        Config config = Configurable.createConfigurable(Config.class, properties);
-
+    public void activate(final Config config) {
         dataDir = new File(config.outputDirectory());
         if (!dataDir.exists()) {
             if (!dataDir.mkdirs()) {
@@ -63,7 +64,7 @@ public class Monitor {
         }
     }
 
-    @Reference(dynamic = true, multiple = true, optional = true)
+    @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     public <T> void addProvider(ObservationProvider<T> provider, Map<String, Object> properties) {
         if (dataDir != null) {
             logger.debug("Started monitoring of [{}]", provider);

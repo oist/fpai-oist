@@ -1,7 +1,6 @@
 package jp.oist.unit.ios.dcoes.houseagent;
 
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ScheduledFuture;
 
@@ -12,34 +11,40 @@ import org.flexiblepower.context.FlexiblePowerContext;
 import org.flexiblepower.ui.Widget;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.annotation.metatype.Meta;
 import net.powermatcher.api.AgentEndpoint;
 import net.powermatcher.api.monitoring.ObservableAgent;
 
-@Component(designateFactory = HouseModel.Config.class)
+@Component
+@Designate(ocd = HouseModel.Config.class, factory = true)
 public class HouseModel {
 
-	@Meta.OCD
-	public interface Config {
-		@Meta.AD(deflt = "house", description = "Agent ID for the house")
-		String agentId();
+	@ObjectClassDefinition
+	public @interface Config {
+		@AttributeDefinition(description = "Agent ID for the house")
+		String agentId() default "house";
 
-		@Meta.AD(deflt = "auctioneer", description = "Agent ID for the desired parent")
-		String desiredParentId();
+		@AttributeDefinition(description = "Agent ID for the desired parent")
+		String desiredParentId() default "auctioneer";
 
-		@Meta.AD(deflt = "62", description = "Initial state of charge for the battery (between 20 and 95)")
-		int initialSoC();
+		@AttributeDefinition(type = AttributeType.INTEGER,
+                             description = "Initial state of charge for the battery (between 20 and 95)")
+		int initialSoC() default 62;
 
-		@Meta.AD(deflt = "700", description = "The power when electricity is exchanged with neighbours")
-		double exchangeRateWatt();
+		@AttributeDefinition(type = AttributeType.DOUBLE,
+                             description = "The power when electricity is exchanged with neighbours")
+		double exchangeRateWatt() default 700d;
 	}
 
 	private final static Logger LOG = LoggerFactory.getLogger(HouseModel.class);
@@ -57,8 +62,8 @@ public class HouseModel {
 	private ServiceRegistration<Widget> widgetServiceRegistration;
 
 	@Activate
-	public void activate(BundleContext bundleContext, Map<String, Object> properties) {
-		config = Configurable.createConfigurable(HouseModel.Config.class, properties);
+	public void activate(BundleContext bundleContext, final Config config) {
+		this.config = config;
 
 		agent = new HouseAgent(this, config.exchangeRateWatt());
 		agent.init(config.agentId(), config.desiredParentId());
@@ -91,7 +96,7 @@ public class HouseModel {
 		widgetServiceRegistration.unregister();
 	}
 
-	@Reference(optional = false, dynamic = false, multiple = false)
+	@Reference(cardinality = ReferenceCardinality.MANDATORY, policy = ReferencePolicy.STATIC)
 	public void setContext(FlexiblePowerContext context) {
 		this.context = context;
 	}

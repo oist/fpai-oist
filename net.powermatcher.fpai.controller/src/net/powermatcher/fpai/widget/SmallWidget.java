@@ -12,12 +12,16 @@ import net.powermatcher.api.monitoring.events.OutgoingBidUpdateEvent;
 import net.powermatcher.api.monitoring.events.OutgoingPriceUpdateEvent;
 
 import org.flexiblepower.ui.Widget;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Reference;
-import aQute.bnd.annotation.metatype.Meta;
-
-@Component(provide = Widget.class, designateFactory = SmallWidget.Config.class)
+@Component(service = Widget.class)
+@Designate(ocd = SmallWidget.Config.class, factory = true)
 public class SmallWidget implements AgentObserver, Widget {
     private static final DateFormat DF = DateFormat.getTimeInstance(DateFormat.LONG);
 
@@ -25,12 +29,13 @@ public class SmallWidget implements AgentObserver, Widget {
     private String priceTime = "";
     private final Map<String, String> demands = new ConcurrentHashMap<String, String>();
 
-    public interface Config {
-        @Meta.AD(deflt = "", description = "A filter for only showing certain type of observable agents")
-               String agent_target();
+    @ObjectClassDefinition
+    public @interface Config {
+        @AttributeDefinition(description = "A filter for only showing certain type of observable agents")
+        String agent_target() default "";
     }
 
-    @Reference(dynamic = true, multiple = true)
+    @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     public void addAgent(ObservableAgent agent) {
         agent.addObserver(this);
     }
