@@ -61,7 +61,11 @@
 		releaseUrl=https://repo.eclipse.org/content/groups/releases/; \
 		index=${.}/eclipse.maven; \
         name="FAN Bundle Hub - Run (Eclipse Repository)"
-
+-plugin.34.Eclipse: \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		releaseUrl=https://raw.githubusercontent.com/oist/solarsystemlib-repo/master/; \
+		index=${.}/solarsystemlib.maven; \
+        name="SolarSystemLib - Run (SolarSystemLib Repository)"
 # FlexiblePower Project Repositories
 #-plugin.51.FlexiblepowerBase: \
 #    aQute.bnd.deployer.repository.FixedIndexedRepo;\
